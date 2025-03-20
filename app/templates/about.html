@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}About - AI Medical Diagnosis System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h1 class="text-center mb-4">About This Project</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">Project Overview</h3>
+            </div>
+            <div class="card-body">
+                <p>The <strong>Multimodal AI Medical Diagnosis System</strong> is an innovative project that demonstrates the integration of computer vision and large language models for medical image analysis, particularly focused on chest X-rays.</p>
+                
+                <p>This system was developed as part of an industry-oriented project to explore the potential of AI in supporting medical diagnostics while completing my Master's in Computer Science at Lamar University.</p>
+                
+                <h4 class="mt-4">Key Features:</h4>
+                <ul>
+                    <li><strong>Computer Vision Analysis:</strong> Utilizes Google Cloud Vision API to extract features and objects from medical images</li>
+                    <li><strong>Natural Language Processing:</strong> Employs OpenAI's GPT-4 to interpret visual findings and generate preliminary assessments</li>
+                    <li><strong>Multimodal Integration:</strong> Combines visual data with textual patient information for comprehensive analysis</li>
+                    <li><strong>Batch Processing:</strong> Supports processing multiple images with progress tracking</li>
+                    <li><strong>Report Generation:</strong> Creates formatted medical reports for educational purposes</li>
+                </ul>
+                
+                <h4 class="mt-4">Educational Purpose:</h4>
+                <p>This system is designed as an educational and research tool to demonstrate the capabilities of AI in medical image analysis. It is <strong>not intended for clinical use</strong> and should not replace professional medical advice or diagnosis.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="card-title mb-0">Technologies Used</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Python
+                        <span class="badge bg-primary rounded-pill">Core</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Google Cloud Vision API
+                        <span class="badge bg-info rounded-pill">Vision</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        OpenAI GPT-4
+                        <span class="badge bg-success rounded-pill">NLP</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Flask
+                        <span class="badge bg-secondary rounded-pill">Web</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Bootstrap 5
+                        <span class="badge bg-secondary rounded-pill">UI</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h3 class="card-title mb-0">Developer</h3>
+            </div>
+            <div class="card-body text-center">
+                <h4>Arun Kumar Chukkala</h4>
+                <p class="mb-2">AI & Machine Learning Engineer</p>
+                <p class="mb-3">M.S. Computer Science, Lamar University</p>
+                <div class="d-grid gap-2">
+                    <a href="https://github.com/arun3676" target="_blank" class="btn btn-outline-primary">
+                        GitHub Profile
+                    </a>
+                    <a href="mailto:arunkiran721@gmail.com" class="btn btn-outline-secondary">
+                        Contact
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h3 class="card-title mb-0">Implementation Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Vision Analysis Pipeline:</h4>
+                        <ol>
+                            <li>X-ray image is processed using Google Cloud Vision API</li>
+                            <li>Multiple analysis models extract objects, labels, and features</li>
+                            <li>Results are consolidated into a structured data format</li>
+                            <li>Optional batch processing for multiple images</li>
+                        </ol>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Medical Interpretation:</h4>
+                        <ol>
+                            <li>Vision results combined with patient symptoms</li>
+                            <li>Data sent to GPT-4 with specialized medical prompts</li>
+                            <li>AI generates preliminary assessments and suggestions</li>
+                            <li>Results formatted into a comprehensive report</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <strong>Research Impact:</strong> This project demonstrates the potential of AI to assist in medical image interpretation while highlighting the importance of human expertise in the final diagnosis.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

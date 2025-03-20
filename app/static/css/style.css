@@ -1,0 +1,456 @@
+/* Professional Medical Theme for AI Medical Diagnosis System */
+
+:root {
+    --primary-color: #1a73e8;
+    --secondary-color: #34a853;
+    --accent-color: #4285f4;
+    --medical-blue: #2176ae;
+    --medical-light-blue: #6daedb;
+    --medical-teal: #1bbc9b;
+    --light-gray: #f8f9fa;
+    --medical-red: #ea4335;
+    --text-dark: #212529;
+    --text-light: #6c757d;
+}
+
+/* General body styling */
+body {
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f4f8;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* Navigation bar styling */
+.navbar {
+    background-color: var(--medical-blue);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0.8rem 1rem;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Card styling with medical theme */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    font-weight: 600;
+    padding: 1rem 1.25rem;
+}
+
+.card-header.primary-header {
+    background-color: var(--medical-blue);
+    color: white;
+    border-bottom: none;
+}
+
+.card-header.secondary-header {
+    background-color: var(--medical-light-blue);
+    color: white;
+    border-bottom: none;
+}
+
+.card-header.success-header {
+    background-color: var(--medical-teal);
+    color: white;
+    border-bottom: none;
+}
+
+/* Section dividers */
+.section-divider {
+    height: 2px;
+    background: linear-gradient(to right, var(--medical-blue), var(--medical-teal), var(--light-gray));
+    margin: 2rem 0;
+    border-radius: 1px;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 5px;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background-color: var(--medical-blue);
+    border-color: var(--medical-blue);
+}
+
+.btn-primary:hover {
+    background-color: #1a65c9;
+    border-color: #1a65c9;
+}
+
+.btn-success {
+    background-color: var(--medical-teal);
+    border-color: var(--medical-teal);
+}
+
+.btn-success:hover {
+    background-color: #16a085;
+    border-color: #16a085;
+}
+
+/* Footer styling */
+.footer {
+    background-color: var(--medical-blue);
+    color: white;
+    margin-top: 2rem;
+}
+
+.footer h5 {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.footer p {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.footer a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+    color: var(--medical-teal);
+}
+
+.footer-copyright {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Analysis results styling */
+.analysis-results {
+    font-family: 'Roboto Mono', monospace;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid var(--medical-blue);
+}
+
+.diagnosis-results {
+    line-height: 1.7;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border-left: 4px solid var(--medical-teal);
+}
+
+.diagnosis-results h2 {
+    color: var(--medical-blue);
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.diagnosis-results h3 {
+    color: var(--medical-light-blue);
+    font-size: 1.2rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.8rem;
+}
+
+.diagnosis-results ul, 
+.diagnosis-results ol {
+    padding-left: 1.5rem;
+}
+
+.diagnosis-results strong {
+    color: var(--medical-blue);
+}
+
+/* Medical dashboard cards */
+.info-card {
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.info-card .icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: white;
+}
+
+.info-card .title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.info-card .value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+}
+
+.info-card.blue {
+    background: linear-gradient(135deg, var(--medical-blue), var(--medical-light-blue));
+}
+
+.info-card.green {
+    background: linear-gradient(135deg, var(--medical-teal), #20c997);
+}
+
+.info-card.purple {
+    background: linear-gradient(135deg, #6f42c1, #a78bda);
+}
+
+.info-card.orange {
+    background: linear-gradient(135deg, #fd7e14, #ffc107);
+}
+
+/* Image container styling */
+.medical-image-container {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    background-color: #000;
+    text-align: center;
+}
+
+.medical-image-container img {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+/* Medical form styling */
+.medical-form .form-label {
+    font-weight: 600;
+    color: var(--medical-blue);
+}
+
+.medical-form .form-control {
+    border-radius: 5px;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ced4da;
+}
+
+.medical-form .form-control:focus {
+    border-color: var(--medical-light-blue);
+    box-shadow: 0 0 0 0.25rem rgba(109, 174, 219, 0.25);
+}
+
+/* Badge styling */
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+    border-radius: 5px;
+}
+
+/* Tab styling */
+.nav-tabs .nav-link {
+    color: var(--text-dark);
+    font-weight: 500;
+    border: none;
+    padding: 0.75rem 1.5rem;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--medical-blue);
+    border-bottom: 3px solid var(--medical-blue);
+    background-color: transparent;
+}
+
+/* Feature icons */
+.feature-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.feature-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.feature-icon.blue {
+    background-color: var(--medical-blue);
+}
+
+.feature-icon.green {
+    background-color: var(--medical-teal);
+}
+
+.feature-icon.purple {
+    background-color: #6f42c1;
+}
+
+/* Spinner for loading states */
+.loading-spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--medical-blue);
+    animation: spinner 1s ease-in-out infinite;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Medical progress bars */
+.medical-progress {
+    height: 0.6rem;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+}
+
+.medical-progress .progress-bar {
+    border-radius: 1rem;
+}
+
+/* Print-specific styles */
+@media print {
+    body {
+        background-color: white;
+    }
+    
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    .card {
+        break-inside: avoid;
+        border: 1px solid #ddd;
+    }
+    
+    .navbar, footer, .btn, .alert {
+        display: none !important;
+    }
+    
+    .card-header.primary-header,
+    .card-header.secondary-header,
+    .card-header.success-header {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+        border-bottom: 1px solid #ddd;
+    }
+}
+
+/* Medical terms highlighting */
+.medical-term {
+    color: var(--medical-blue);
+    font-weight: 500;
+    text-decoration: underline dotted;
+    cursor: help;
+}
+
+/* Tooltip customization */
+.tooltip .tooltip-inner {
+    max-width: 300px;
+    padding: 10px 15px;
+    background-color: var(--medical-blue);
+    font-size: 0.85rem;
+}
+.markdown-content h2 {
+    color: var(--medical-blue);
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.markdown-content {
+    line-height: 1.7;
+}
+
+.diagnosis-output h3 {
+    color: var(--medical-light-blue);
+    font-size: 1.2rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.8rem;
+}
+
+.diagnosis-output h4 {
+    color: var(--medical-teal);
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.6rem;
+}
+
+.diagnosis-output ul, 
+.diagnosis-output ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.diagnosis-output li {
+    margin-bottom: 0.5rem;
+}
+
+.diagnosis-output strong {
+    color: var(--medical-blue);
+}
+
+.medical-report-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.section-content {
+    margin-bottom: 1.5rem;
+    padding-left: 0.5rem;
+}
+
+.medical-term {
+    color: var(--medical-blue);
+    font-weight: 500;
+    text-decoration: underline dotted;
+    cursor: help;
+}

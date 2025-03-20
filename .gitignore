@@ -1,0 +1,12 @@
+# Sensitive files 
+.env 
+.env.* 
+credentials/ 
+*.json 
+google_credentials.json 
+# Python 
+__pycache__/ 
+*.py[cod] 
+instance/ 
+uploads/ 
+venv/ 
