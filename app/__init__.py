@@ -22,7 +22,9 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY=os.getenv("SECRET_KEY", "dev"),
-        UPLOAD_FOLDER=os.path.join(app.instance_path, "uploads"),
+        # Save uploaded images inside the static folder so they can be served
+        # directly by Flask without an additional route.
+        UPLOAD_FOLDER=os.path.join(app.root_path, "static", "uploads"),
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # Max upload size of 16 MB
         ALLOWED_EXTENSIONS={"png", "jpg", "jpeg"},
     )
