@@ -64,60 +64,64 @@ class MedicalDiagnosisGenerator:
         """
         Generate dynamic diagnosis using actual Gemini analysis without OpenAI API calls.
         """
-        # Extract basic information from analysis
+        # Extract the actual analysis text from Gemini
         analysis_text = analysis_data.get('analysis_text', '')
-        labels = analysis_data.get('labels', [])
-        objects = analysis_data.get('objects', [])
         
-        # Analyze the actual analysis text from Gemini
-        analysis_lower = analysis_text.lower()
+        if not analysis_text:
+            # If no analysis text, return a basic response
+            return self._generate_basic_response()
         
-        # Create comprehensive findings based on actual analysis content
+        # Parse the Gemini analysis to extract findings
         findings = []
-        confidence = 0.75  # Default confidence
+        confidence = 0.75
         
-        # Check for multiple findings in the analysis (not just one)
-        if any(term in analysis_lower for term in ['cardiomegaly', 'heart', 'cardiac', 'enlarged']):
-            findings.append({
-                'finding': 'Possible cardiomegaly',
-                'confidence': 0.80,
-                'location': 'Cardiac silhouette',
-                'severity': 'Moderate'
-            })
+        # Split analysis into sentences for better parsing
+        sentences = analysis_text.replace('\n', ' ').split('.')
         
-        if any(term in analysis_lower for term in ['effusion', 'fluid', 'pleural', 'blunting']):
-            findings.append({
-                'finding': 'Possible pleural effusion',
-                'confidence': 0.80,
-                'location': 'Pleural space',
-                'severity': 'Moderate'
-            })
+        # Look for key medical terms and their context
+        finding_patterns = {
+            'cardiomegaly': ['cardiomegaly', 'enlarged heart', 'cardiac enlargement', 'heart size increased'],
+            'pleural effusion': ['pleural effusion', 'fluid in pleural space', 'blunting of costophrenic'],
+            'pneumonia': ['pneumonia', 'consolidation', 'infiltrate', 'opacity'],
+            'pneumothorax': ['pneumothorax', 'collapsed lung', 'air in pleural space'],
+            'normal': ['normal', 'no abnormalities', 'unremarkable', 'within normal limits']
+        }
         
-        if any(term in analysis_lower for term in ['pneumonia', 'infection', 'consolidation', 'opacity', 'infiltrate']):
-            findings.append({
-                'finding': 'Possible pneumonia or consolidation',
-                'confidence': 0.85,
-                'location': 'Lung fields',
-                'severity': 'Moderate'
-            })
+        # Extract findings from the actual analysis text
+        for sentence in sentences:
+            sentence_lower = sentence.lower()
+            for finding_type, keywords in finding_patterns.items():
+                for keyword in keywords:
+                    if keyword in sentence_lower:
+                        # Extract location if mentioned
+                        location = 'Not specified'
+                        if 'right' in sentence_lower:
+                            location = 'Right side'
+                        elif 'left' in sentence_lower:
+                            location = 'Left side'
+                        elif 'bilateral' in sentence_lower:
+                            location = 'Bilateral'
+                        
+                        # Determine severity based on context
+                        severity = 'Moderate'
+                        if any(word in sentence_lower for word in ['severe', 'significant', 'large']):
+                            severity = 'High'
+                        elif any(word in sentence_lower for word in ['mild', 'small', 'minimal']):
+                            severity = 'Mild'
+                        
+                        # Add finding if not already added
+                        finding_text = finding_type.replace('_', ' ').title()
+                        if not any(f['finding'] == finding_text for f in findings):
+                            findings.append({
+                                'finding': finding_text,
+                                'confidence': 0.80,
+                                'location': location,
+                                'severity': severity
+                            })
+                        break
         
-        if any(term in analysis_lower for term in ['pneumothorax', 'air', 'collapse', 'pneumothorax']):
-            findings.append({
-                'finding': 'Possible pneumothorax',
-                'confidence': 0.85,
-                'location': 'Pleural space',
-                'severity': 'High'
-            })
-        
-        if any(term in analysis_lower for term in ['mass', 'nodule', 'tumor', 'lesion']):
-            findings.append({
-                'finding': 'Possible mass or nodule',
-                'confidence': 0.80,
-                'location': 'Lung fields',
-                'severity': 'High'
-            })
-        
-        if any(term in analysis_lower for term in ['normal', 'unremarkable', 'clear']):
+        # If no findings detected, check if it's normal
+        if not findings and any(word in analysis_text.lower() for word in ['normal', 'unremarkable', 'no abnormalities']):
             findings.append({
                 'finding': 'Normal chest X-ray',
                 'confidence': 0.85,
@@ -125,7 +129,7 @@ class MedicalDiagnosisGenerator:
                 'severity': 'None'
             })
         
-        # If no specific findings detected, provide a general assessment
+        # If still no findings, indicate analysis needed
         if not findings:
             findings.append({
                 'finding': 'Chest X-ray requires clinical correlation',
@@ -134,34 +138,90 @@ class MedicalDiagnosisGenerator:
                 'severity': 'Unknown'
             })
         
-        # Calculate overall confidence based on findings
-        if findings:
-            confidence = max(finding['confidence'] for finding in findings)
+        # Generate dynamic diagnosis based on extracted findings
+        return self._format_findings_as_diagnosis(findings, symptoms, patient_info)
+    
+    def _generate_basic_response(self) -> Dict:
+        """Generate a basic response when no analysis text is available."""
+        return {
+            'diagnosis': """# AI-Assisted Medical Assessment
+*Comprehensive Chest X-ray Analysis*
+
+## SUMMARY TABLE
+| **Finding** | **Confidence** | **Location** | **Severity** |
+|-------------|----------------|--------------|--------------|
+| Analysis incomplete | 50% | Chest | Unknown |
+
+## IMAGE QUALITY ASSESSMENT
+**Image Quality:** Unable to assess - Analysis data not available      
+**Technical Adequacy:** Unable to assess - Analysis data not available     
+
+## FINDINGS
+**Analysis Data Not Available**
+The AI analysis could not be completed due to missing or incomplete data.
+
+## CLINICAL IMPRESSION
+**Primary Assessment:** Analysis incomplete
+**Diagnostic Confidence:** Low (50%)
+**Supporting Evidence:** Insufficient data for reliable interpretation
+
+## CLINICAL RECOMMENDATIONS
+**Repeat analysis with complete data recommended.**
+
+## NEXT STEPS
+**Recommended next action:** Re-upload the image for complete analysis.
+
+## CLINICAL CORRELATION
+**Symptoms:** No symptoms reported
+   Clinical correlation requires complete imaging analysis.
+
+## DIAGNOSTIC CONFIDENCE
+**Analysis Reliability:** Low (50%)
+**Clinical Interpretation:** Insufficient data for clinical interpretation.
+
+---
+## DISCLAIMER
+**Educational Purpose Only:** This AI analysis is designed for learning and research. Not for clinical use. Always consult qualified healthcare professionals for medical decisions.""",
+            'confidence_score': 0.5,
+            'structured_data': {
+                'findings': [{
+                    'finding': 'Analysis incomplete',
+                    'confidence': 0.5,
+                    'location': 'Chest',
+                    'severity': 'Unknown'
+                }],
+                'impression': 'Analysis incomplete - insufficient data',
+                'confidence': 0.5,
+                'recommendations': ['Repeat analysis with complete data']
+            }
+        }
+    
+    def _format_findings_as_diagnosis(self, findings: List[Dict], symptoms: str, patient_info: Dict = None) -> Dict:
+        """Format extracted findings into a comprehensive diagnosis report."""
+        confidence = max(finding['confidence'] for finding in findings) if findings else 0.75
         
-        # Generate dynamic diagnosis text based on actual findings
-        if findings:
-            # Create findings table
-            findings_table = ""
-            for finding in findings:
-                severity_icon = "GREEN" if finding['severity'] == 'None' else "YELLOW" if finding['severity'] == 'Moderate' else "RED"
-                findings_table += f"| {finding['finding']} | {int(finding['confidence'] * 100)}% | {finding['location']} | {finding['severity']} |\n"
-            
-            # Determine overall assessment
-            if any(f['severity'] == 'High' for f in findings):
-                overall_assessment = "High priority findings detected"
-                urgency_icon = "RED"
-            elif any(f['severity'] == 'Moderate' for f in findings):
-                overall_assessment = "Moderate findings requiring evaluation"
-                urgency_icon = "YELLOW"
-            elif any(f['severity'] == 'None' for f in findings):
-                overall_assessment = "Normal findings"
-                urgency_icon = "GREEN"
-            else:
-                overall_assessment = "Findings require clinical correlation"
-                urgency_icon = "YELLOW"
-            
-            # Create dynamic diagnosis text
-            diagnosis_text = f"""# 🩺 AI-Assisted Medical Assessment
+        # Create findings table
+        findings_table = ""
+        for finding in findings:
+            severity_icon = "GREEN" if finding['severity'] == 'None' else "YELLOW" if finding['severity'] == 'Moderate' else "RED"
+            findings_table += f"| {finding['finding']} | {int(finding['confidence'] * 100)}% | {finding['location']} | {finding['severity']} |\n"
+        
+        # Determine overall assessment
+        if any(f['severity'] == 'High' for f in findings):
+            overall_assessment = "High priority findings detected"
+            urgency_icon = "RED"
+        elif any(f['severity'] == 'Moderate' for f in findings):
+            overall_assessment = "Moderate findings requiring evaluation"
+            urgency_icon = "YELLOW"
+        elif any(f['severity'] == 'None' for f in findings):
+            overall_assessment = "Normal findings"
+            urgency_icon = "GREEN"
+        else:
+            overall_assessment = "Findings require clinical correlation"
+            urgency_icon = "YELLOW"
+        
+        # Create dynamic diagnosis text
+        diagnosis_text = f"""# 🩺 AI-Assisted Medical Assessment
 *Comprehensive Medical Image Analysis*
 
 ## 📊 SUMMARY TABLE
@@ -177,17 +237,17 @@ Technical Adequacy: Proper positioning and exposure for diagnostic evaluation
 The following clinically relevant findings have been identified:
 
 """
-            
-            # Add findings details
-            for i, finding in enumerate(findings, 1):
-                severity_icon = "GREEN" if finding['severity'] == 'None' else "YELLOW" if finding['severity'] == 'Moderate' else "RED"
-                diagnosis_text += f"{i}. {severity_icon} {finding['finding']}\n"
-                diagnosis_text += f"Location: {finding['location']}\n"
-                diagnosis_text += f"Severity: {finding['severity']}\n"
-                diagnosis_text += f"AI Confidence: {int(finding['confidence'] * 100)}% - {'Very High' if finding['confidence'] >= 0.85 else 'High' if finding['confidence'] >= 0.75 else 'Moderate'} confidence detection\n\n"
-            
-            diagnosis_text += f"""## CLINICAL IMPRESSION
-Primary Assessment: {findings[0]['finding']}
+        
+        # Add findings details
+        for i, finding in enumerate(findings, 1):
+            severity_icon = "GREEN" if finding['severity'] == 'None' else "YELLOW" if finding['severity'] == 'Moderate' else "RED"
+            diagnosis_text += f"{i}. {severity_icon} {finding['finding']}\n"
+            diagnosis_text += f"Location: {finding['location']}\n"
+            diagnosis_text += f"Severity: {finding['severity']}\n"
+            diagnosis_text += f"AI Confidence: {int(finding['confidence'] * 100)}% - {'Very High' if finding['confidence'] >= 0.85 else 'High' if finding['confidence'] >= 0.75 else 'Moderate'} confidence detection\n\n"
+        
+        diagnosis_text += f"""## CLINICAL IMPRESSION
+Primary Assessment: {findings[0]['finding'] if findings else 'Within normal limits'}
 Diagnostic Confidence: {urgency_icon}
 Supporting Evidence: {'Very High' if confidence >= 0.85 else 'High' if confidence >= 0.75 else 'Moderate'} confidence detection with characteristic imaging features
 
@@ -213,46 +273,7 @@ AI Limitations: This analysis may not detect all conditions or may suggest findi
 
 DISCLAIMER
 Educational Purpose Only: This AI analysis is designed for learning and research. Not for clinical use. Always consult qualified healthcare professionals for medical decisions."""
-        else:
-            diagnosis_text = f"""# AI-Assisted Medical Assessment
-*Comprehensive Chest X-ray Analysis*
-
-## SUMMARY TABLE
-| **Finding** | **Confidence** | **Location** | **Severity** |
-|-------------|----------------|--------------|--------------|
-| Normal chest X-ray | 75% | Entire chest | None |
-
-## IMAGE QUALITY ASSESSMENT
-**Image Quality:** Good - Well-defined structures suitable for accurate analysis      
-**Technical Adequacy:** Proper positioning and exposure for diagnostic evaluation     
-
-## FINDINGS
-**No High-Confidence or Critical Abnormalities Detected**
-Based on analysis, the chest X-ray appears within normal limits. No significant abnormalities were identified.
-
-## CLINICAL IMPRESSION
-**Primary Assessment:** Within normal limits
-**Diagnostic Confidence:** High Likelihood (75%)
-**Supporting Evidence:** No significant abnormalities detected
-
-## CLINICAL RECOMMENDATIONS
-**Routine follow-up as per clinical guidelines.**
-
-## NEXT STEPS
-**Recommended next action:** Continue with routine healthcare monitoring as advised by your doctor.
-
-## CLINICAL CORRELATION
-**Symptoms:** {symptoms if symptoms else 'No symptoms reported'}
-   The absence of symptoms correlates with the normal imaging findings.
-
-## DIAGNOSTIC CONFIDENCE
-**Analysis Reliability:** High (75%)
-**Clinical Interpretation:** High diagnostic confidence with characteristic imaging features. Appropriate for clinical correlation.
-
----
-## DISCLAIMER
-**Educational Purpose Only:** This AI analysis is designed for learning and research. Not for clinical use. Always consult qualified healthcare professionals for medical decisions."""
-
+        
         return {
             'diagnosis': diagnosis_text,
             'confidence_score': confidence,
