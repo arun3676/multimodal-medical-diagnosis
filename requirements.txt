@@ -18,3 +18,6 @@ scikit-image==0.22.0
 # Utilities
 requests==2.31.0
 tenacity==8.2.3
+
+# Optional: Error tracking (will work without this)
+sentry-sdk[flask]==1.40.0
