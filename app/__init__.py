@@ -9,8 +9,16 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_caching import Cache
 from dotenv import load_dotenv
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
+
+# Optional Sentry import - won't break if not available
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.flask import FlaskIntegration
+    SENTRY_AVAILABLE = True
+except ImportError:
+    SENTRY_AVAILABLE = False
+    sentry_sdk = None
+    FlaskIntegration = None
 
 # Load environment variables
 load_dotenv()
@@ -70,15 +78,16 @@ def create_app(test_config=None):
         # Load the test config if passed in
         app.config.from_mapping(test_config)
 
-    # Initialize Sentry for error tracking in production (DISABLED FOR DEBUGGING)
-    sentry_dsn = os.getenv("SENTRY_DSN")
-    if sentry_dsn and sentry_dsn.startswith("http"):  # Only init if valid DSN
-        sentry_sdk.init(
-            dsn=sentry_dsn,
-            integrations=[FlaskIntegration()],
-            traces_sample_rate=0.1,
-            profiles_sample_rate=0.1,
-        )
+    # Initialize Sentry for error tracking in production (optional)
+    if SENTRY_AVAILABLE:
+        sentry_dsn = os.getenv("SENTRY_DSN")
+        if sentry_dsn and sentry_dsn.startswith("http"):  # Only init if valid DSN
+            sentry_sdk.init(
+                dsn=sentry_dsn,
+                integrations=[FlaskIntegration()],
+                traces_sample_rate=0.1,
+                profiles_sample_rate=0.1,
+            )
 
     # Initialize extensions with app
     CORS(app, origins=os.getenv("ALLOWED_ORIGINS", "*").split(","))
