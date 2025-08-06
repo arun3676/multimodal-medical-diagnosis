@@ -819,17 +819,16 @@ Your final output must be structured according to the function schema, adhering 
         else:
             return "Insufficient confidence for clinical interpretation. Consider repeat imaging or alternative studies."
 
-# Create singleton instance
-diagnosis_generator = MedicalDiagnosisGenerator()
-
 # Backward compatibility functions
 def generate_diagnosis(image_analysis: str, symptoms: str, model: str = "gpt-4") -> str:
     """Backward compatible function."""
+    generator = MedicalDiagnosisGenerator()
     analysis_data = {'raw_analysis': image_analysis}
-    result = diagnosis_generator.generate_diagnosis(analysis_data, symptoms)
+    result = generator.generate_diagnosis(analysis_data, symptoms)
     return result['diagnosis']
 
 def generate_enhanced_interpretation(findings_dict: Dict, symptoms: str, model: str = "gpt-4") -> str:
     """Backward compatible function."""
-    result = diagnosis_generator.generate_diagnosis(findings_dict, symptoms)
+    generator = MedicalDiagnosisGenerator()
+    result = generator.generate_diagnosis(findings_dict, symptoms)
     return result['diagnosis']
