@@ -12,11 +12,11 @@ openai==1.35.0
 google-generativeai==0.3.2
 Pillow==10.2.0
 opencv-python-headless==4.9.0.80
-numpy==1.26.0
+numpy==1.26.4
 scikit-image==0.22.0
 
 # Utilities
-requests==2.31.0
+requests==2.32.2
 tenacity==8.2.3
 
 # Optional: Error tracking (will work without this)
