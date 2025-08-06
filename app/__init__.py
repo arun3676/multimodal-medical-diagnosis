@@ -115,6 +115,14 @@ def create_app(test_config=None):
     # Health check endpoint
     @app.route('/health')
     def health_check():
-        return {'status': 'healthy', 'version': '2.0.0'}, 200
+        return {
+            'status': 'healthy', 
+            'version': '2.0.0',
+            'services': {
+                'flask': 'running',
+                'gemini': 'available' if os.getenv("GEMINI_API_KEY") else 'not_configured',
+                'openai': 'available' if os.getenv("OPENAI_API_KEY") else 'not_configured'
+            }
+        }, 200
 
     return app

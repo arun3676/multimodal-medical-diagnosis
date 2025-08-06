@@ -32,7 +32,19 @@ main_bp = Blueprint("main", __name__)
 
 # Initialize analyzers
 image_analyzer = GeminiImageAnalyzer()
-diagnosis_generator = MedicalDiagnosisGenerator()
+diagnosis_generator = None  # Will be initialized when needed
+
+def get_diagnosis_generator():
+    """Get or create the diagnosis generator instance."""
+    global diagnosis_generator
+    if diagnosis_generator is None:
+        try:
+            diagnosis_generator = MedicalDiagnosisGenerator()
+        except Exception as e:
+            current_app.logger.error(f"Failed to initialize diagnosis generator: {e}")
+            # Return None to trigger fallback behavior
+            return None
+    return diagnosis_generator
 
 def allowed_file(filename):
     """Check if the uploaded file has an allowed extension."""
@@ -129,7 +141,12 @@ def analyze():
                 }
             
             # Generate diagnosis
-            diagnosis_results = diagnosis_generator.generate_diagnosis(
+            diagnosis_gen = get_diagnosis_generator()
+            if diagnosis_gen is None:
+                flash("Diagnosis service temporarily unavailable. Please try again later.", "warning")
+                return redirect(url_for("main.index"))
+            
+            diagnosis_results = diagnosis_gen.generate_diagnosis(
                 analysis_results,
                 symptoms,
                 patient_info
@@ -293,7 +310,11 @@ def api_analyze():
             analysis_results = image_analyzer.analyze_medical_image(filepath)
             
             # Generate diagnosis
-            diagnosis_results = diagnosis_generator.generate_diagnosis(
+            diagnosis_gen = get_diagnosis_generator()
+            if diagnosis_gen is None:
+                return jsonify({"success": False, "error": "Diagnosis service temporarily unavailable"}), 503
+            
+            diagnosis_results = diagnosis_gen.generate_diagnosis(
                 analysis_results,
                 symptoms
             )

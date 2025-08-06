@@ -19,10 +19,17 @@ class MedicalDiagnosisGenerator:
     """Simplified medical diagnosis generator."""
     
     def __init__(self):
-        self.client = self._initialize_client()
-        self.model = os.getenv("OPENAI_MODEL", "gpt-4-turbo-preview")
-        self.temperature = float(os.getenv("OPENAI_TEMPERATURE", "0.3"))
-        self.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", "2000"))
+        try:
+            self.client = self._initialize_client()
+            self.model = os.getenv("OPENAI_MODEL", "gpt-4-turbo-preview")
+            self.temperature = float(os.getenv("OPENAI_TEMPERATURE", "0.3"))
+            self.max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", "2000"))
+        except Exception as e:
+            logger.warning(f"OpenAI client initialization failed: {e}")
+            self.client = None
+            self.model = "gpt-4-turbo-preview"
+            self.temperature = 0.3
+            self.max_tokens = 2000
     
     def _initialize_client(self) -> OpenAI:
         """Initialize OpenAI client with proper error handling."""
@@ -30,11 +37,8 @@ class MedicalDiagnosisGenerator:
         if not api_key:
             raise ValueError("OpenAI API key not found in environment variables")
         
-        return OpenAI(
-            api_key=api_key,
-            timeout=30.0,
-            max_retries=3
-        )
+        # Remove any unsupported parameters - just use the basic initialization
+        return OpenAI(api_key=api_key)
     
     def generate_diagnosis(self, analysis_data: Dict, symptoms: str = "", patient_info: Dict = None) -> Dict:
         """
@@ -264,6 +268,11 @@ Based on analysis, the chest X-ray appears within normal limits. No significant 
         """
         Generate diagnosis using OpenAI API.
         """
+        # Check if OpenAI client is available
+        if self.client is None:
+            logger.warning("OpenAI client not available, using fallback diagnosis")
+            raise Exception("OpenAI client not initialized")
+        
         # Prepare the analysis summary
         analysis_summary = self._prepare_analysis_summary(analysis_data)
         
