@@ -37,7 +37,7 @@ class MedicalDiagnosisGenerator:
         if not api_key:
             raise ValueError("OpenAI API key not found in environment variables")
         
-        # Remove any unsupported parameters - just use the basic initialization
+        # IMPORTANT: Only use api_key parameter, no other parameters
         return OpenAI(api_key=api_key)
     
     def generate_diagnosis(self, analysis_data: Dict, symptoms: str = "", patient_info: Dict = None) -> Dict:
