@@ -9,40 +9,84 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get the raw content
         let content = diagnosisContent.innerHTML;
         
-        // Process headers
-        content = content.replace(/## (.*?)(?=\n|$)/g, '<h2>$1</h2>');
-        content = content.replace(/### (.*?)(?=\n|$)/g, '<h3>$1</h3>');
-        content = content.replace(/#+ (.*?)(?=\n|$)/g, '<h4>$1</h4>');
+        // Process headers (in order of specificity)
+        content = content.replace(/^# (.*?)$/gm, '<h1>$1</h1>');
+        content = content.replace(/^## (.*?)$/gm, '<h2>$1</h2>');
+        content = content.replace(/^### (.*?)$/gm, '<h3>$1</h3>');
+        content = content.replace(/^#### (.*?)$/gm, '<h4>$1</h4>');
         
-        // Process lists
-        content = content.replace(/\* (.*?)(?=\n|$)/g, '<li>$1</li>');
-        content = content.replace(/(\d+)\. (.*?)(?=\n|$)/g, '<li><strong>$1.</strong> $2</li>');
+        // Process horizontal rules
+        content = content.replace(/^---$/gm, '<hr>');
         
-        // Add proper list elements
-        content = content.replace(/<li>(.*?)<\/li>/g, function(match) {
-            return '<ul>' + match + '</ul>';
-        });
-        
-        // Fix duplicate lists
-        content = content.replace(/<\/ul><ul>/g, '');
-        
-        // Process bold text
+        // Process bold text first (before italics to avoid conflicts)
         content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         
-        // Process italics
-        content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Process italics (single asterisks that aren't part of bold)
+        content = content.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
         
-        // Add proper spacing between sections
-        content = content.replace(/<\/h2>/g, '</h2><div class="section-content">');
-        content = content.replace(/<h2>/g, '</div><h2>');
+        // Process lists - improved handling
+        content = content.replace(/^[\s]*[-*] (.*?)$/gm, '<li>$1</li>');
+        content = content.replace(/^[\s]*(\d+)\. (.*?)$/gm, '<li><strong>$1.</strong> $2</li>');
         
-        // Fix the first closing div
-        content = content.replace(/^<\/div>/, '');
+        // Wrap consecutive list items in ul tags
+        content = content.replace(/(<li>.*?<\/li>(?:\s*<li>.*?<\/li>)*)/gs, '<ul>$1</ul>');
         
-        // Add the final closing div
-        content += '</div>';
+        // Process paragraphs - split by double newlines and wrap non-header content
+        const lines = content.split('\n');
+        let processedLines = [];
+        let inParagraph = false;
         
-        // Add a container for the content
+        for (let line of lines) {
+            line = line.trim();
+            
+            // Check if line is a header, list, or other special element
+            const isSpecialElement = line.match(/^<(h[1-6]|hr|ul|li|\/ul)/);
+            
+            if (line === '') {
+                // Empty line - close paragraph if open
+                if (inParagraph) {
+                    processedLines[processedLines.length - 1] += '</p>';
+                    inParagraph = false;
+                }
+                continue;
+            } else if (isSpecialElement) {
+                // Special element - close paragraph if open
+                if (inParagraph) {
+                    processedLines[processedLines.length - 1] += '</p>';
+                    inParagraph = false;
+                }
+                processedLines.push(line);
+            } else {
+                // Regular text - start paragraph if not already in one
+                if (!inParagraph) {
+                    processedLines.push('<p>' + line);
+                    inParagraph = true;
+                } else {
+                    processedLines[processedLines.length - 1] += ' ' + line;
+                }
+            }
+        }
+        
+        // Close final paragraph if still open
+        if (inParagraph) {
+            processedLines[processedLines.length - 1] += '</p>';
+        }
+        
+        content = processedLines.join('\n');
+        
+        // Clean up any duplicate or empty paragraphs
+        content = content.replace(/<p>\s*<\/p>/g, '');
+        content = content.replace(/<p>(<[^>]+>)\s*<\/p>/g, '$1');
+        
+        // Add section containers for better styling
+        content = content.replace(/<h2>(.*?)<\/h2>/g, '<div class="report-section"><h2>$1</h2><div class="section-content">');
+        content = content.replace(/<h1>(.*?)<\/h1>/g, '</div></div><h1>$1</h1><div class="report-section"><div class="section-content">');
+        
+        // Fix the structure
+        content = content.replace(/^<\/div><\/div>/, '');
+        content += '</div></div>';
+        
+        // Add main container
         content = '<div class="medical-report-container">' + content + '</div>';
         
         // Update the content

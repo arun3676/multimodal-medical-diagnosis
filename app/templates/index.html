@@ -1,229 +1,156 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XR Health - Medical Imaging Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <header class="top-bar">
+            <div class="logo">
+                <i class="fas fa-heartbeat"></i>
+                <span>XR Health</span>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search patients, scans...">
+            </div>
+            <div class="top-controls">
+                <button class="btn-secondary">
+                    <i class="fas fa-plus"></i>
+                    Add New Scan
+                </button>
+                <button class="btn-secondary">
+                    <i class="fas fa-user"></i>
+                    Profile
+                </button>
+            </div>
+        </header>
 
-{% block title %}MediScan AI - Advanced Medical Image Analysis{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body text-center py-5">
-                <h1 class="display-4 mb-3">MediScan AI</h1>
-                <p class="lead mb-4">Advanced AI-powered chest X-ray analysis using computer vision and large language models</p>
-                <div class="alert alert-warning d-inline-block">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Educational Purpose Only:</strong> This system is designed for research and education, not clinical diagnosis.
+        <div class="main-content">
+            <!-- Left Sidebar - Tools -->
+            <aside class="sidebar left-sidebar">
+                <div class="tool-section">
+                    <h3><i class="fas fa-cog"></i> Investigation Type</h3>
+                    <select class="medical-select">
+                        <option value="auto">Automatically</option>
+                        <option value="manual">Manual Analysis</option>
+                    </select>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
+            </aside>
 
-<div class="row mb-4">
-    <!-- Stats Cards -->
-    <div class="col-md-3 col-sm-6">
-        <div class="info-card blue">
-            <i class="fas fa-brain icon"></i>
-            <div class="title">AI Models</div>
-            <div class="value">2+</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="info-card green">
-            <i class="fas fa-laptop-medical icon"></i>
-            <div class="title">Accuracy</div>
-            <div class="value">92%</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="info-card purple">
-            <i class="fas fa-notes-medical icon"></i>
-            <div class="title">Features</div>
-            <div class="value">15+</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="info-card orange">
-            <i class="fas fa-clock icon"></i>
-            <div class="title">Processing Time</div>
-            <div class="value">&lt;30s</div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header primary-header">
-                <h3 class="card-title mb-0"><i class="fas fa-upload me-2"></i>Upload X-ray Image</h3>
-            </div>
-            <div class="card-body">
-                <form action="{{ url_for('main.analyze') }}" method="post" enctype="multipart/form-data" class="medical-form">
-                    <div class="mb-4">
-                        <label for="xray_image" class="form-label"><i class="fas fa-file-medical-alt me-2"></i>Select X-ray Image</label>
-                        <div class="input-group">
-                            <input class="form-control" type="file" id="xray_image" name="xray_image" accept="image/jpeg,image/png" required>
-                            <span class="input-group-text bg-light"><i class="fas fa-image"></i></span>
-                        </div>
-                        <div class="form-text">Supported formats: JPEG, PNG (Max: 16MB)</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="symptoms" class="form-label"><i class="fas fa-clipboard-list me-2"></i>Patient Symptoms & History</label>
-                        <textarea class="form-control" id="symptoms" name="symptoms" rows="5" placeholder="Enter patient symptoms, medical history, or additional information..."></textarea>
-                        <div class="form-text">Providing detailed symptoms helps improve the analysis accuracy</div>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-microscope me-2"></i>Analyze X-ray
+            <!-- Central Image Viewer -->
+            <main class="image-viewer">
+                <div class="viewer-header">
+                    <h2><i class="fas fa-x-ray"></i> Chest X-Ray Analysis</h2>
+                    <div class="viewer-controls">
+                        <button class="btn-primary" id="analyzeBtn" style="display: none;">
+                            <i class="fas fa-brain"></i>
+                            Analyze Image
+                        </button>
+                        <button class="btn-secondary" id="freshAnalyzeBtn" style="display: none;">
+                            <i class="fas fa-sync-alt"></i>
+                            Fresh Analysis
+                        </button>
+                        <button class="btn-secondary" id="resetView">
+                            <i class="fas fa-home"></i>
+                            Reset View
                         </button>
                     </div>
-                </form>
+                </div>
+
+                <div class="image-container" id="imageContainer">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h3>Upload Medical Image</h3>
+                            <p>Drag and drop your X-ray image here or click to browse</p>
+                            <button class="btn-primary" id="browseBtn">
+                                <i class="fas fa-folder-open"></i>
+                                Browse Files
+                            </button>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                        
+                        <!-- Hidden form for analysis -->
+                        <form id="freshAnalysisForm" action="{{ url_for('main.analyze') }}" method="post" enctype="multipart/form-data" style="display: none;">
+                            <input type="file" name="xray_image" id="freshFileInput" accept="image/*">
+                            <input type="text" name="symptoms" id="symptomsInput" placeholder="Patient symptoms (optional)">
+                            <input type="text" name="patient_age" id="ageInput" placeholder="Patient age (optional)">
+                            <select name="patient_gender" id="genderInput">
+                                <option value="">Select gender (optional)</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <textarea name="medical_history" id="historyInput" placeholder="Medical history (optional)"></textarea>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="image-info">
+                    <div class="info-item">
+                        <span class="label">Analysis Date:</span>
+                        <span class="value" id="analysisDate">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Analysis Time:</span>
+                        <span class="value" id="analysisTime">--</span>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar - Analysis & Patient Info -->
+            <aside class="sidebar right-sidebar">
+                <div class="analysis-section">
+                    <h3><i class="fas fa-stethoscope"></i> AI Analysis Results</h3>
+                    <div class="analysis-content" id="analysisResults">
+                        <div class="placeholder-message">
+                            <i class="fas fa-robot"></i>
+                            <p>Upload an image to begin AI analysis</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-section">
+                    <h3><i class="fas fa-user-injured"></i> Patient Information</h3>
+                    <div class="patient-info">
+                        <div class="info-row">
+                            <span class="label">Patient ID:</span>
+                            <span class="value">P-2024-001</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Date:</span>
+                            <span class="value" id="currentDate">--</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Study Type:</span>
+                            <span class="value">Chest X-Ray</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal" id="loadingModal">
+        <div class="modal-content">
+            <div class="loading-spinner">
+                <i class="fas fa-brain"></i>
+            </div>
+            <h3>AI Analysis in Progress</h3>
+            <p>Analyzing medical image with advanced AI algorithms...</p>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header secondary-header">
-                <h3 class="card-title mb-0"><i class="fas fa-cogs me-2"></i>How It Works</h3>
-            </div>
-            <div class="card-body">
-                <div class="d-flex mb-4">
-                    <div class="feature-icon blue me-3">
-                        <i class="fas fa-upload"></i>
-                    </div>
-                    <div>
-                        <h5>1. Upload Medical Image</h5>
-                        <p>Upload a chest X-ray image for AI-powered analysis.</p>
-                    </div>
-                </div>
-                
-                <div class="d-flex mb-4">
-                    <div class="feature-icon green me-3">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <div>
-                        <h5>2. Computer Vision Analysis</h5>
-                        <p>Google Cloud Vision API analyzes the image and extracts key features.</p>
-                    </div>
-                </div>
-                
-                <div class="d-flex mb-4">
-                    <div class="feature-icon purple me-3">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <div>
-                        <h5>3. Advanced AI Interpretation</h5>
-                        <p>GPT-4 interprets the findings and provides educational analysis.</p>
-                    </div>
-                </div>
-                
-                <div class="d-flex mb-4">
-                    <div class="feature-icon blue me-3">
-                        <i class="fas fa-file-medical-alt"></i>
-                    </div>
-                    <div>
-                        <h5>4. Structured Report Generation</h5>
-                        <p>Receive a detailed, professional report with key findings.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="section-divider"></div>
-
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header success-header">
-                <h3 class="card-title mb-0"><i class="fas fa-shield-alt me-2"></i>System Capabilities</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Image Enhancement</h5>
-                                <p class="mb-0">Automatic preprocessing for clearer analysis</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Structured Reporting</h5>
-                                <p class="mb-0">Clear, organized findings with highlights</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Multimodal Analysis</h5>
-                                <p class="mb-0">Combines visual data with symptoms</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Density Analysis</h5>
-                                <p class="mb-0">Measures image density patterns</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Educational Notes</h5>
-                                <p class="mb-0">Provides learning context for findings</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Anatomical Analysis</h5>
-                                <p class="mb-0">Region-specific measurements</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-        
-        // File upload preview
-        const fileInput = document.getElementById('xray_image');
-        if (fileInput) {
-            fileInput.addEventListener('change', function(event) {
-                const fileName = event.target.files[0]?.name;
-                if (fileName) {
-                    const fileLabel = document.querySelector('label[for="xray_image"]');
-                    fileLabel.innerHTML = `<i class="fas fa-file-medical-alt me-2"></i>Selected file: ${fileName}`;
-                }
-            });
-        }
-    });
-</script>
-{% endblock %}
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
