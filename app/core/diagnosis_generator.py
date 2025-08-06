@@ -139,22 +139,22 @@ class MedicalDiagnosisGenerator:
             # Create findings table
             findings_table = ""
             for finding in findings:
-                severity_icon = "🟢" if finding['severity'] == 'None' else "🟡" if finding['severity'] == 'Moderate' else "🔴"
+                severity_icon = "GREEN" if finding['severity'] == 'None' else "YELLOW" if finding['severity'] == 'Moderate' else "RED"
                 findings_table += f"| {finding['finding']} | {int(finding['confidence'] * 100)}% | {finding['location']} | {finding['severity']} |\n"
             
             # Determine overall assessment
             if any(f['severity'] == 'High' for f in findings):
                 overall_assessment = "High priority findings detected"
-                urgency_icon = "🔴"
+                urgency_icon = "RED"
             elif any(f['severity'] == 'Moderate' for f in findings):
                 overall_assessment = "Moderate findings requiring evaluation"
-                urgency_icon = "🟡"
+                urgency_icon = "YELLOW"
             elif any(f['severity'] == 'None' for f in findings):
                 overall_assessment = "Normal findings"
-                urgency_icon = "🟢"
+                urgency_icon = "GREEN"
             else:
                 overall_assessment = "Findings require clinical correlation"
-                urgency_icon = "🟡"
+                urgency_icon = "YELLOW"
             
             # Create dynamic diagnosis text
             diagnosis_text = f"""# 🩺 AI-Assisted Medical Assessment
@@ -165,18 +165,18 @@ class MedicalDiagnosisGenerator:
 |-------------|----------------|--------------|--------------|
 {findings_table}
 
-## 📋 IMAGE QUALITY ASSESSMENT
-✅ Image Quality: Good - Well-defined structures suitable for accurate analysis
-✅ Technical Adequacy: Proper positioning and exposure for diagnostic evaluation
+## IMAGE QUALITY ASSESSMENT
+Image Quality: Good - Well-defined structures suitable for accurate analysis
+Technical Adequacy: Proper positioning and exposure for diagnostic evaluation
 
-## 🔍 KEY FINDINGS
+## KEY FINDINGS
 The following clinically relevant findings have been identified:
 
 """
             
             # Add findings details
             for i, finding in enumerate(findings, 1):
-                severity_icon = "🟢" if finding['severity'] == 'None' else "🟡" if finding['severity'] == 'Moderate' else "🔴"
+                severity_icon = "GREEN" if finding['severity'] == 'None' else "YELLOW" if finding['severity'] == 'Moderate' else "RED"
                 diagnosis_text += f"{i}. {severity_icon} {finding['finding']}\n"
                 diagnosis_text += f"Location: {finding['location']}\n"
                 diagnosis_text += f"Severity: {finding['severity']}\n"
@@ -218,7 +218,7 @@ Educational Purpose Only: This AI analysis is designed for learning and research
 |-------------|----------------|--------------|--------------|
 | Normal chest X-ray | 75% | Entire chest | None |
 
-## 📋 IMAGE QUALITY ASSESSMENT
+## IMAGE QUALITY ASSESSMENT
 **Image Quality:** Good - Well-defined structures suitable for accurate analysis      
 **Technical Adequacy:** Proper positioning and exposure for diagnostic evaluation     
 
@@ -701,7 +701,7 @@ Your final output must be structured according to the function schema, adhering 
         if confidence >= 0.95:
             return "🎯"
         elif confidence >= 0.85:
-            return "✅"
+            return "OK"
         elif confidence >= 0.70:
             return "⚠️"
         else:
@@ -711,13 +711,13 @@ Your final output must be structured according to the function schema, adhering 
         """Get visual icon for severity level."""
         severity_lower = severity.lower()
         if severity_lower == 'critical':
-            return "🔴"
+            return "RED"
         elif severity_lower == 'severe':
             return "🟠"
         elif severity_lower == 'moderate':
-            return "🟡"
+            return "YELLOW"
         elif severity_lower == 'mild':
-            return "🟢"
+            return "GREEN"
         else:
             return "⚪"
     
@@ -773,7 +773,7 @@ Your final output must be structured according to the function schema, adhering 
         elif urgency_lower == 'routine':
             return "📅"
         else:
-            return "📋"
+            return "INFO"
     
     def _get_urgency_description(self, urgency: str) -> str:
         """Get descriptive text for urgency levels."""
