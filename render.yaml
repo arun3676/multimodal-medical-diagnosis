@@ -1,15 +1,16 @@
 services:
+  # This tells Render to deploy the 'web' service from your docker-compose.yml
   - type: web
-    name: mediscan-ai
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT
+    name: multimodal-medical-diagnosis
+    env: docker
+    # This tells Render to use your docker-compose.yml file
+    dockerContext: .
+    dockerfilePath: ./Dockerfile.render # Use the optimized Dockerfile
+    # Specify the instance type to ensure enough memory
+    instanceType: e1-standard-2 # 2 vCPUs, 4 GB RAM
+    plan: starter
+    healthCheckPath: /health
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: GEMINI_API_KEY
-        sync: false
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: SECRET_KEY
-        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      # Add your other API keys here in the Render dashboard, not here.

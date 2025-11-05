@@ -4,9 +4,38 @@
 credentials/ 
 *.json 
 google_credentials.json 
+
 # Python 
 __pycache__/ 
 *.py[cod] 
 instance/ 
 uploads/ 
-venv/ 
+venv/
+.venv/
+
+# Logs
+logs/
+*.log
+
+# Cache & Models
+models_cache/
+wandb/
+.pytest_cache/
+
+# Test images
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+.vercelignore

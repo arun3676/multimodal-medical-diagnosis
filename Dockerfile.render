@@ -1,0 +1,33 @@
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the requirements file FIRST
+# This layer is only rebuilt when requirements.txt changes
+COPY requirements.txt .
+
+# Install dependencies
+# --no-cache-dir keeps the image small
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code
+# This layer is rebuilt on any code change, but dependencies are already installed
+COPY . .
+
+# Create a non-root user to run the application
+RUN adduser --disabled-password --gecos '' appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# Make port 5000 available to the world outside this container
+EXPOSE 5000
+
+# Define environment variable
+ENV FLASK_ENV=production
+ENV PYTHONUNBUFFERED=1
+
+# Run the application with Gunicorn
+# Use 1 worker to control memory usage
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "120", "run:create_app()"]

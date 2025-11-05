@@ -201,10 +201,23 @@
         <div class="results-container">
             <div class="results-header">
                 <h1><i class="fas fa-file-medical"></i> Analysis Results</h1>
-                <a href="{{ url_for('main.index') }}" class="back-btn">
-                    <i class="fas fa-arrow-left"></i>
-                    Back to Analysis
-                </a>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    {% if results.analysis_method == 'fast_finetuned' %}
+                    <button id="runDetailedAnalysisBtn" class="btn-primary" data-filename="{{ results.image_filename }}">
+                        <i class="fas fa-microscope"></i>
+                        Run Detailed Analysis
+                    </button>
+                    {% endif %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Powered by</span>
+                        <span id="vlmProvider" style="font-weight: 500;">Loading...</span>
+                        <span id="providerBadge" style="font-size: 0.8rem;">LOADING</span>
+                    </div>
+                    <a href="{{ url_for('main.index') }}" class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Analysis
+                    </a>
+                </div>
             </div>
 
             <div class="results-grid">
@@ -244,12 +257,16 @@
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/markdown.js') }}"></script>
     <script>
         // Parse and display the analysis results
         document.addEventListener('DOMContentLoaded', function() {
             const analysisContent = document.getElementById('analysisContent');
             const diagnosisText = `{{ results.diagnosis|safe }}`;
+            
+            // Update VLM provider display
+            updateVLMProvider('{{ results.vision_provider|default("unknown") }}');
             
             // Parse markdown and display
             const formattedResults = parseMarkdown(diagnosisText);
