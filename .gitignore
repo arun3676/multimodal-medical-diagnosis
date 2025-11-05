@@ -22,7 +22,9 @@ models_cache/
 wandb/
 .pytest_cache/
 
-# Test images
+# Datasets & Test Images
+chest_xray_dataset/
+test/
 *.png
 *.jpg
 *.jpeg
