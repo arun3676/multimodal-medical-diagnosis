@@ -97,7 +97,7 @@ class WhisperTranscriber:
                         }
                 except Exception as provider_error:
                     last_error = str(provider_error)
-                    logger.error("Audio transcription via %s failed: %s", provider, provider_error)
+                    logger.info("Audio transcription via %s failed, trying next provider", provider)
                     continue
 
             # All providers failed
@@ -109,7 +109,7 @@ class WhisperTranscriber:
             }
             
         except Exception as e:
-            logger.error(f"Error transcribing audio: {e}")
+            logger.info(f"Audio transcription error: {e}")
             return {
                 "error": f"Transcription failed: {str(e)}",
                 "symptoms": "",
@@ -121,29 +121,33 @@ class WhisperTranscriber:
         if not self.groq_api_key:
             raise ValueError("Groq API key not configured")
 
-        files = {
-            "file": (file_name, audio_bytes, mime_type)
-        }
-        data = {
-            "model": self.groq_whisper_model,
-            "response_format": "text",
-            "language": "en"
-        }
-        headers = {
-            "Authorization": f"Bearer {self.groq_api_key}"
-        }
+        try:
+            files = {
+                "file": (file_name, audio_bytes, mime_type)
+            }
+            data = {
+                "model": self.groq_whisper_model,
+                "response_format": "text",
+                "language": "en"
+            }
+            headers = {
+                "Authorization": f"Bearer {self.groq_api_key}"
+            }
 
-        response = self.http_client.post(
-            "https://api.groq.com/openai/v1/audio/transcriptions",
-            data=data,
-            files=files,
-            headers=headers,
-            timeout=60.0
-        )
-        if response.status_code != 200:
-            raise RuntimeError(f"Groq Whisper error: {response.status_code} - {response.text}")
+            response = self.http_client.post(
+                "https://api.groq.com/openai/v1/audio/transcriptions",
+                data=data,
+                files=files,
+                headers=headers,
+                timeout=60.0
+            )
+            if response.status_code != 200:
+                raise RuntimeError(f"Groq Whisper error: {response.status_code}")
 
-        return response.text.strip()
+            return response.text.strip()
+        except Exception as e:
+            logger.info(f"Groq transcription attempt failed")
+            raise
 
     def _transcribe_with_openai(self, audio_bytes: bytes) -> str:
         if not self.openai_api_key:

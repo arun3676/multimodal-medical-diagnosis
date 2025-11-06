@@ -66,9 +66,18 @@ def setup_logging() -> None:
     console_handler.setFormatter(console_formatter)
     logger.addHandler(console_handler)
     
-    # Suppress noisy third-party loggers
-    logging.getLogger("werkzeug").setLevel("WARNING")
-    logging.getLogger("urllib3").setLevel("WARNING")
-    logging.getLogger("wandb").setLevel("WARNING")
+    # Suppress noisy third-party loggers - only show critical errors
+    logging.getLogger("werkzeug").setLevel("ERROR")
+    logging.getLogger("urllib3").setLevel("ERROR")
+    logging.getLogger("wandb").setLevel("ERROR")
+    logging.getLogger("wandb.sdk").setLevel("ERROR")
+    logging.getLogger("httpx").setLevel("ERROR")
+    logging.getLogger("httpcore").setLevel("ERROR")
+    logging.getLogger("openai").setLevel("ERROR")
+    logging.getLogger("google").setLevel("ERROR")
+    
+    # Suppress all assertion errors and warnings from W&B
+    import warnings
+    warnings.filterwarnings("ignore", category=UserWarning, module="wandb")
     
     logger.info("Logging system initialized", extra={"component": "logging_setup"})

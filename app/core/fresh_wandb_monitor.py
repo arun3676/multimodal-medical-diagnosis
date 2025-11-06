@@ -30,16 +30,20 @@ class FreshWandBMonitor:
         try:
             # Check if API key is available
             if not settings.WANDB_API_KEY:
-                logger.warning("W&B API key not found - monitoring disabled")
+                logger.info("W&B API key not found - monitoring disabled")
                 self.enabled = False
                 return
             
-            # Login to W&B
-            wandb.login(key=settings.WANDB_API_KEY)
+            # Set W&B to silent mode to suppress internal errors
+            os.environ["WANDB_SILENT"] = "true"
+            os.environ["WANDB_CONSOLE"] = "off"
+            
+            # Login to W&B with error suppression
+            wandb.login(key=settings.WANDB_API_KEY, relogin=True, force=True)
             logger.info("✅ W&B authentication successful")
             
         except Exception as e:
-            logger.warning(f"W&B initialization failed: {e}")
+            logger.info(f"W&B initialization skipped: {e}")
             self.enabled = False
     
     def start_fresh_run(self):
@@ -52,11 +56,14 @@ class FreshWandBMonitor:
             # Generate unique session ID
             self.session_id = f"session-{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}"
             
-            # Finish any existing run
+            # Finish any existing run quietly
             if self.run is not None:
-                wandb.finish()
+                try:
+                    wandb.finish(quiet=True)
+                except:
+                    pass
             
-            # Start fresh run
+            # Start fresh run with error handling
             self.run = wandb.init(
                 project=self.project_name,
                 name=self.session_id,
@@ -68,14 +75,20 @@ class FreshWandBMonitor:
                     "python_version": os.sys.version,
                     "working_directory": os.getcwd()
                 },
-                reinit=True  # Allow reinitialization
+                reinit=True,
+                settings=wandb.Settings(
+                    silent=True,
+                    console="off",
+                    _disable_stats=True,
+                    _disable_meta=True
+                )
             )
             
             logger.info(f"🎯 Fresh W&B run started: {self.session_id}")
             return True
             
         except Exception as e:
-            logger.warning(f"Failed to start fresh W&B run: {e}")
+            logger.info(f"W&B run skipped: {e}")
             self.enabled = False
             return False
     
@@ -107,7 +120,7 @@ class FreshWandBMonitor:
             logger.debug(f"📊 Logged prediction to {self.session_id}")
             
         except Exception as e:
-            logger.warning(f"Failed to log prediction to W&B: {e}")
+            pass  # Silently skip W&B logging errors
     
     def log_model_performance(self, 
                              model_name: str,
@@ -129,7 +142,7 @@ class FreshWandBMonitor:
             logger.debug(f"📊 Logged performance metrics to {self.session_id}")
             
         except Exception as e:
-            logger.warning(f"Failed to log model performance to W&B: {e}")
+            pass  # Silently skip W&B logging errors
     
     def log_error(self, error_type: str, error_message: str, context: Dict[str, Any] = None):
         """Log error occurrence"""
@@ -150,7 +163,7 @@ class FreshWandBMonitor:
             logger.debug(f"📊 Logged error to {self.session_id}")
             
         except Exception as e:
-            logger.warning(f"Failed to log error to W&B: {e}")
+            pass  # Silently skip W&B logging errors
     
     def log_system_metrics(self, metrics: Dict[str, Any]):
         """Log system performance metrics"""
@@ -164,7 +177,7 @@ class FreshWandBMonitor:
             logger.debug(f"📊 Logged system metrics to {self.session_id}")
             
         except Exception as e:
-            logger.warning(f"Failed to log system metrics to W&B: {e}")
+            pass  # Silently skip W&B logging errors
     
     def log_error(self, error_type: str, error_message: str, context: Dict[str, Any] = None):
         """Log error occurrence"""
@@ -185,7 +198,7 @@ class FreshWandBMonitor:
             logger.debug(f"📊 Logged error to {self.session_id}")
             
         except Exception as e:
-            logger.warning(f"Failed to log error to W&B: {e}")
+            pass  # Silently skip W&B logging errors
     
     def log_api_cost(self, provider: str, model: str, cost: float, execution_time: float, tokens: Dict[str, int]):
         """Log API cost and performance"""
@@ -203,7 +216,7 @@ class FreshWandBMonitor:
             wandb.log(log_data)
             logger.debug(f"💰 Logged API cost: {provider} - ${cost:.6f}")
         except Exception as e:
-            logger.warning(f"Failed to log API cost to W&B: {e}")
+            pass  # Silently skip W&B logging errors
     
     def log_system_health(self):
         """Log system health metrics (CPU, GPU, Memory)"""
@@ -217,7 +230,7 @@ class FreshWandBMonitor:
             wandb.log(metrics)
             logger.debug(f"🖥️ Logged system health metrics")
         except Exception as e:
-            logger.warning(f"Failed to log system health to W&B: {e}")
+            pass  # Silently skip W&B logging errors
     
     def log_cost_summary(self):
         """Log cost and performance summary"""
@@ -231,7 +244,7 @@ class FreshWandBMonitor:
             wandb.log(metrics)
             logger.info(f"💰 Cost Summary: {cost_tracker.get_all_summary()}")
         except Exception as e:
-            logger.warning(f"Failed to log cost summary to W&B: {e}")
+            pass  # Silently skip W&B logging errors
     
     def finish_run(self):
         """Finish the current W&B run"""
@@ -242,7 +255,7 @@ class FreshWandBMonitor:
                 self.run = None
                 self.session_id = None
             except Exception as e:
-                logger.warning(f"Failed to finish W&B run: {e}")
+                pass  # Silently skip W&B finish errors
     
     def get_session_info(self):
         """Get current session information"""
