@@ -331,6 +331,7 @@ def api_transcribe():
 
 
 @main_bp.route("/health")
+@limiter.exempt
 def health_check():
     """Health check endpoint."""
     return {

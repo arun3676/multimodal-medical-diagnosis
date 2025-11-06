@@ -138,6 +138,7 @@ def create_app(test_config=None):
 
     # Health check endpoint
     @app.route('/health')
+    @limiter.exempt
     def health_check():
         return {
             'status': 'healthy', 
