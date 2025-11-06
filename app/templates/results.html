@@ -1,262 +1,302 @@
-{% extends "base.html" %}
-
-{% block title %}Analysis Results - MediScan AI{% endblock %}
-
-{% block head %}
-<style>
-    .analysis-output {
-        white-space: pre-wrap;
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    
-    .diagnosis-output {
-        max-height: 600px;
-        overflow-y: auto;
-    }
-    
-    .diagnosis-output h2 {
-        color: var(--medical-blue);
-        font-size: 1.4rem;
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 1px solid #dee2e6;
-    }
-    
-    .diagnosis-output h3 {
-        color: var(--medical-light-blue);
-        font-size: 1.2rem;
-        margin-top: 1.2rem;
-        margin-bottom: 0.8rem;
-    }
-    
-    .diagnosis-output ul, 
-    .diagnosis-output ol {
-        padding-left: 1.5rem;
-    }
-    
-    .diagnosis-output strong {
-        color: var(--medical-blue);
-    }
-    
-    @media print {
-        .analysis-output, .diagnosis-output {
-            max-height: none;
-            overflow: visible;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XR Health - Analysis Results</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Analysis Results</li>
-            </ol>
-        </nav>
         
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h1><i class="fas fa-file-medical-alt me-2"></i>Medical Image Analysis Report</h1>
-            <div class="d-flex gap-2">
-                <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">
-                    <i class="fas fa-plus me-1"></i>New Analysis
-                </a>
-                <button class="btn btn-outline-secondary" onclick="window.print()">
-                    <i class="fas fa-print me-1"></i>Print
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .image-section, .analysis-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .medical-image {
+            width: 100%;
+            text-align: center;
+            background: var(--darker-bg);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .medical-image img {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+        
+        .analysis-content {
+            max-height: 600px;
+            overflow-y: auto;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+        
+        .analysis-content h1 {
+            color: var(--accent-blue);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-blue);
+            padding-bottom: 0.5rem;
+        }
+        
+        .analysis-content h2 {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.75rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .analysis-content h3 {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin: 1rem 0 0.5rem 0;
+        }
+        
+        .analysis-content p {
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+        
+        .analysis-content ul {
+            margin: 0.75rem 0;
+            padding-left: 1.5rem;
+        }
+        
+        .analysis-content li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .confidence-high {
+            color: var(--success-green);
+            font-weight: 600;
+        }
+        
+        .confidence-medium {
+            color: var(--warning-orange);
+            font-weight: 600;
+        }
+        
+        .confidence-low {
+            color: var(--error-red);
+            font-weight: 600;
+        }
+        
+        .download-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <header class="top-bar">
+            <div class="logo">
+                <i class="fas fa-heartbeat"></i>
+                <span>XR Health</span>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search patients, scans...">
+            </div>
+            <div class="top-controls">
+                <button class="btn-secondary">
+                    <i class="fas fa-plus"></i>
+                    Add New Scan
+                </button>
+                <button class="btn-secondary">
+                    <i class="fas fa-user"></i>
+                    Profile
                 </button>
             </div>
-        </div>
-        
-        <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            <strong>Educational Purpose Only:</strong> This analysis is for research and educational 
-            purposes. The results should not be used for clinical decisions or to replace professional 
-            medical advice.
-        </div>
-        
-        {% if not results.is_likely_xray %}
-        <div class="alert alert-danger">
-            <i class="fas fa-exclamation-circle me-2"></i>
-            <strong>Warning:</strong> The uploaded image does not appear to be a standard medical X-ray. 
-            The analysis may be significantly less accurate.
-        </div>
-        {% endif %}
-    </div>
-</div>
+        </header>
 
-<div class="row">
-    <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header primary-header">
-                <h3 class="card-title mb-0"><i class="fas fa-image me-2"></i>X-ray Image</h3>
-            </div>
-            <div class="card-body p-0">
-                <div class="medical-image-container">
-                    <img src="{{ url_for('static', filename='uploads/' + results.image_filename) }}" 
-                         class="img-fluid" alt="Uploaded X-ray Image">
-                </div>
-                <div class="p-3">
-                    <div class="mb-2">
-                        <strong><i class="fas fa-file-alt me-2"></i>Filename:</strong> 
-                        <span class="text-monospace">{{ results.image_filename }}</span>
-                    </div>
-                    <div class="mb-2">
-                        <strong><i class="fas fa-calendar-alt me-2"></i>Date Analyzed:</strong> 
-                        <span>{{ now.strftime('%B %d, %Y') }}</span>
-                    </div>
-                    <div>
-                        <strong><i class="fas fa-clock me-2"></i>Time:</strong> 
-                        <span>{{ now.strftime('%H:%M:%S') }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-8 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header primary-header">
-                <h3 class="card-title mb-0"><i class="fas fa-user-md me-2"></i>Patient Information</h3>
-            </div>
-            <div class="card-body">
-                <h5><i class="fas fa-clipboard-list me-2"></i>Reported Symptoms:</h5>
-                <div class="card mb-4 bg-light">
-                    <div class="card-body">
-                        {% if results.symptoms %}
-                            <p>{{ results.symptoms }}</p>
-                        {% else %}
-                            <p class="text-muted">No symptoms provided.</p>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card mb-3">
-                            <div class="card-body p-3">
-                                <h6 class="card-title mb-2"><i class="fas fa-vial me-2"></i>Quick Stats</h6>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Analysis Type:</span>
-                                    <span class="badge bg-primary">Chest X-ray</span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>AI Models Used:</span>
-                                    <span class="badge bg-info">2</span>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <span>Processing Time:</span>
-                                    <span class="badge bg-success">{{ results.processing_time|default('N/A') }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body p-3">
-                                <h6 class="card-title mb-2"><i class="fas fa-info-circle me-2"></i>Analysis Info</h6>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Image Type:</span>
-                                    <span class="badge {% if results.is_likely_xray %}bg-success{% else %}bg-danger{% endif %}">
-                                        {% if results.is_likely_xray %}X-ray Confirmed{% else %}Not X-ray{% endif %}
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Image Quality:</span>
-                                    <span class="badge bg-primary">Standard</span>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <span>Version:</span>
-                                    <span class="badge bg-secondary">v2.0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-12 mb-4">
-        <ul class="nav nav-tabs" id="resultTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="report-tab" data-bs-toggle="tab" data-bs-target="#report" type="button" role="tab" aria-controls="report" aria-selected="true">
-                    <i class="fas fa-file-medical me-2"></i>Medical Report
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis" type="button" role="tab" aria-controls="analysis" aria-selected="false">
-                    <i class="fas fa-microscope me-2"></i>Raw Analysis
-                </button>
-            </li>
-        </ul>
-        
-        <div class="card shadow-sm tab-content">
-            <div class="tab-pane fade show active" id="report" role="tabpanel" aria-labelledby="report-tab">
-                <div class="card-header success-header">
-                    <h3 class="card-title mb-0"><i class="fas fa-stethoscope me-2"></i>AI-Assisted Medical Assessment</h3>
-                </div>
-                <div class="card-body">
-                    <div class="diagnosis-output markdown-content" id="diagnosis-content">{{ results.diagnosis | safe }}</div>
-                </div>
-            </div>
-            
-            <div class="tab-pane fade" id="analysis" role="tabpanel" aria-labelledby="analysis-tab">
-                <div class="card-header secondary-header">
-                    <h3 class="card-title mb-0"><i class="fas fa-search me-2"></i>Technical Analysis Results</h3>
-                </div>
-                <div class="card-body">
-                    <pre class="analysis-output">{{ results.analysis }}</pre>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card shadow-sm">
-            <div class="card-header primary-header">
-                <h3 class="card-title mb-0"><i class="fas fa-cog me-2"></i>Actions</h3>
-            </div>
-            <div class="card-body">
-                <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-primary" onclick="window.print()">
-                        <i class="fas fa-print me-2"></i>Print Results
+        <div class="results-container">
+            <div class="results-header">
+                <h1><i class="fas fa-file-medical"></i> Analysis Results</h1>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    {% if results.analysis_method == 'fast_finetuned' %}
+                    <button id="runDetailedAnalysisBtn" class="btn-primary" data-filename="{{ results.image_filename }}">
+                        <i class="fas fa-microscope"></i>
+                        Run Detailed Analysis
                     </button>
-                    <button class="btn btn-success" id="downloadPDF">
-                        <i class="fas fa-file-pdf me-2"></i>Download PDF
-                    </button>
-                    <a href="{{ url_for('main.index') }}" class="btn btn-info">
-                        <i class="fas fa-plus-circle me-2"></i>New Analysis
+                    {% endif %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Powered by</span>
+                        <span id="vlmProvider" style="font-weight: 500;">Loading...</span>
+                        <span id="providerBadge" style="font-size: 0.8rem;">LOADING</span>
+                    </div>
+                    <a href="{{ url_for('main.index') }}" class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Analysis
                     </a>
-                    <button class="btn btn-secondary" id="compareBtn">
-                        <i class="fas fa-columns me-2"></i>Compare with Previous
-                    </button>
                 </div>
+            </div>
+
+            <div class="results-grid">
+                <!-- Image Section -->
+                <div class="image-section">
+                    <div class="section-header">
+                        <i class="fas fa-x-ray"></i>
+                        Medical Image
+                    </div>
+                    <div class="medical-image">
+                        <img src="{{ url_for('main.uploaded_file', filename=results.image_filename) }}" 
+                             alt="Uploaded X-ray Image">
+                    </div>
+                </div>
+
+                <!-- Analysis Section -->
+                <div class="analysis-section">
+                    <div class="section-header">
+                        <i class="fas fa-stethoscope"></i>
+                        AI Analysis Report
+                    </div>
+                    <div class="analysis-content" id="analysisContent">
+                        <!-- Analysis content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Section -->
+            <div class="download-section">
+                <h3><i class="fas fa-download"></i> Export Report</h3>
+                <p>Download the complete analysis report for your records</p>
+                <a href="#" class="download-btn" onclick="downloadReport()">
+                    <i class="fas fa-file-pdf"></i>
+                    Download PDF Report
+                </a>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // PDF Download button
-        document.getElementById('downloadPDF').addEventListener('click', function() {
-            alert('PDF generation feature would be implemented here. This would create a downloadable PDF report of the analysis.');
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/markdown.js') }}"></script>
+    <script>
+        // Parse and display the analysis results
+        document.addEventListener('DOMContentLoaded', function() {
+            const analysisContent = document.getElementById('analysisContent');
+            const diagnosisText = `{{ results.diagnosis|safe }}`;
+            
+            // Update VLM provider display
+            updateVLMProvider('{{ results.vision_provider|default("unknown") }}');
+            
+            // Parse markdown and display
+            const formattedResults = parseMarkdown(diagnosisText);
+            analysisContent.innerHTML = formattedResults;
         });
-        
-        // Compare button
-        document.getElementById('compareBtn').addEventListener('click', function() {
-            alert('Comparison feature would be implemented here. This would allow comparing with previous analyses.');
-        });
-    });
-</script>
-{% endblock %}
+
+        function downloadReport() {
+            // Placeholder for PDF download functionality
+            alert('PDF download functionality would be implemented here');
+        }
+
+        function parseMarkdown(text) {
+            // Enhanced markdown parser for medical reports
+            return text
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/✅/g, '<span class="confidence-high">✅</span>')
+                .replace(/⚠️/g, '<span class="confidence-medium">⚠️</span>')
+                .replace(/❌/g, '<span class="confidence-low">❌</span>')
+                .replace(/🔴/g, '<span class="confidence-low">🔴</span>')
+                .replace(/🟠/g, '<span class="confidence-medium">🟠</span>')
+                .replace(/🟡/g, '<span class="confidence-medium">🟡</span>')
+                .replace(/🟢/g, '<span class="confidence-high">🟢</span>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^\s*-\s*(.*$)/gim, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+        }
+    </script>
+</body>
+</html>

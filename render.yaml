@@ -1,0 +1,14 @@
+services:
+  # This tells Render to deploy the 'web' service from your docker-compose.yml
+  - type: web
+    name: multimodal-medical-diagnosis
+    env: docker
+    # This tells Render to use your docker-compose.yml file
+    dockerContext: .
+    dockerfilePath: ./Dockerfile.render # Use the optimized Dockerfile
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      # Add your other API keys here in the Render dashboard, not here.

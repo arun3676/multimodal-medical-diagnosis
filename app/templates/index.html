@@ -1,229 +1,615 @@
-{% extends "base.html" %}
-
-{% block title %}MediScan AI - Advanced Medical Image Analysis{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body text-center py-5">
-                <h1 class="display-4 mb-3">MediScan AI</h1>
-                <p class="lead mb-4">Advanced AI-powered chest X-ray analysis using computer vision and large language models</p>
-                <div class="alert alert-warning d-inline-block">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Educational Purpose Only:</strong> This system is designed for research and education, not clinical diagnosis.
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <!-- Stats Cards -->
-    <div class="col-md-3 col-sm-6">
-        <div class="info-card blue">
-            <i class="fas fa-brain icon"></i>
-            <div class="title">AI Models</div>
-            <div class="value">2+</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="info-card green">
-            <i class="fas fa-laptop-medical icon"></i>
-            <div class="title">Accuracy</div>
-            <div class="value">92%</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="info-card purple">
-            <i class="fas fa-notes-medical icon"></i>
-            <div class="title">Features</div>
-            <div class="value">15+</div>
-        </div>
-    </div>
-    <div class="col-md-3 col-sm-6">
-        <div class="info-card orange">
-            <i class="fas fa-clock icon"></i>
-            <div class="title">Processing Time</div>
-            <div class="value">&lt;30s</div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header primary-header">
-                <h3 class="card-title mb-0"><i class="fas fa-upload me-2"></i>Upload X-ray Image</h3>
-            </div>
-            <div class="card-body">
-                <form action="{{ url_for('main.analyze') }}" method="post" enctype="multipart/form-data" class="medical-form">
-                    <div class="mb-4">
-                        <label for="xray_image" class="form-label"><i class="fas fa-file-medical-alt me-2"></i>Select X-ray Image</label>
-                        <div class="input-group">
-                            <input class="form-control" type="file" id="xray_image" name="xray_image" accept="image/jpeg,image/png" required>
-                            <span class="input-group-text bg-light"><i class="fas fa-image"></i></span>
-                        </div>
-                        <div class="form-text">Supported formats: JPEG, PNG (Max: 16MB)</div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label for="symptoms" class="form-label"><i class="fas fa-clipboard-list me-2"></i>Patient Symptoms & History</label>
-                        <textarea class="form-control" id="symptoms" name="symptoms" rows="5" placeholder="Enter patient symptoms, medical history, or additional information..."></textarea>
-                        <div class="form-text">Providing detailed symptoms helps improve the analysis accuracy</div>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-microscope me-2"></i>Analyze X-ray
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-6 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header secondary-header">
-                <h3 class="card-title mb-0"><i class="fas fa-cogs me-2"></i>How It Works</h3>
-            </div>
-            <div class="card-body">
-                <div class="d-flex mb-4">
-                    <div class="feature-icon blue me-3">
-                        <i class="fas fa-upload"></i>
-                    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIAGNOSTIC IMAGING - AI-Powered Medical Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Modern Header -->
+    <header class="header-main">
+        <div class="header-container">
+            <div class="header-content">
+                <div class="header-brand">
+                    <div class="brand-dot"></div>
                     <div>
-                        <h5>1. Upload Medical Image</h5>
-                        <p>Upload a chest X-ray image for AI-powered analysis.</p>
+                        <h1 class="brand-title">XR Health</h1>
+                        <p class="brand-subtitle">AI-Powered Medical Analysis</p>
                     </div>
+                </div>
+
+                <div class="header-nav">
+                    <!-- Simplified navigation - only essential items -->
                 </div>
                 
-                <div class="d-flex mb-4">
-                    <div class="feature-icon green me-3">
-                        <i class="fas fa-eye"></i>
-                    </div>
-                    <div>
-                        <h5>2. Computer Vision Analysis</h5>
-                        <p>Google Cloud Vision API analyzes the image and extracts key features.</p>
+                <div class="header-divider"></div>
+                
+                <!-- Reset Analysis Button -->
+                <button class="btn btn-neutral-outline" id="resetAnalysisBtn">
+                    <i class="fas fa-redo"></i>
+                    RESET ANALYSIS
+                </button>
+
+                <!-- GitHub Link -->
+                <a href="https://github.com/arunn7/multimodal-medical-diagnosis" target="_blank" class="size-10 rounded-full flex items-center justify-center" style="background-color: var(--neutral-900); text-decoration: none;">
+                    <i class="fab fa-github text-white" style="font-size: 1.25rem;"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+    <!-- Main Content Area -->
+    <main>
+        <div class="page-wrapper">
+            <!-- Upload Section -->
+            <section class="upload-wrapper">
+                <div class="card">
+                    <div class="card-content" style="padding: 2rem 2.5rem;">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="size-10 rounded-lg flex items-center justify-center" style="background-color: var(--neutral-100); border: 1px solid var(--neutral-200);">
+                                    <i class="fas fa-x-ray" style="color: var(--neutral-900);"></i>
+                                </div>
+                                <div>
+                                    <h2 style="color: var(--neutral-900); font-weight: 500;">Chest X-Ray Analysis</h2>
+                                    <p style="color: var(--neutral-600); font-size: 0.75rem;">Upload and analyze your medical image</p>
+                                </div>
+                            </div>
+
+                            <div class="analysis-complete-badge" id="analysisCompleteBadge" style="display: none;">
+                                <i class="fas fa-check-circle"></i>
+                                <span>ANALYSIS COMPLETE</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="d-flex mb-4">
-                    <div class="feature-icon purple me-3">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <div>
-                        <h5>3. Advanced AI Interpretation</h5>
-                        <p>GPT-4 interprets the findings and provides educational analysis.</p>
+
+                <div class="card">
+                    <div class="card-content" style="padding: 2.5rem;">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="size-8 rounded-lg flex items-center justify-center" style="background-color: var(--neutral-100); border: 1px solid var(--neutral-200);">
+                                    <i class="fas fa-heartbeat" style="color: var(--neutral-900);"></i>
+                                </div>
+                                <div>
+                                    <p style="color: var(--neutral-600); font-size: 0.75rem; letter-spacing: var(--tracking-wide);">ANALYSIS TYPE</p>
+                                    <p style="color: var(--neutral-900); font-weight: 500;">Chest X-Ray Analysis</p>
+                                </div>
+                            </div>
+
+                            <div style="color: var(--neutral-600); font-size: 0.875rem;">
+                                Analysis Date: <span style="color: var(--neutral-900); font-weight: 500;" id="analysisDate">Nov 1, 2025</span>
+                                <span style="margin: 0 0.75rem; color: var(--neutral-300);">|</span>
+                                Analysis Time: <span style="color: var(--neutral-900); font-weight: 500;" id="analysisTime">--</span>
+                            </div>
+                        </div>
+
+                        <div class="w-full upload-container">
+                            <!-- Analysis Mode Selector -->
+                            <div class="card mb-6" style="background: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%); border: 1px solid var(--neutral-200);">
+                                <div class="card-content" style="padding: 1.5rem 2rem;">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="size-8 rounded-lg flex items-center justify-center" style="background-color: var(--neutral-100); border: 1px solid var(--neutral-200);">
+                                                <i class="fas fa-sliders-h" style="color: var(--neutral-900); font-size: 0.875rem;"></i>
+                                            </div>
+                                            <div>
+                                                <h4 style="color: var(--neutral-900); font-size: 0.875rem; font-weight: 500;">Analysis Mode</h4>
+                                                <p style="color: var(--neutral-600); font-size: 0.75rem;">Choose analysis type</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Analysis Mode Toggle -->
+                                        <div class="analysis-mode-toggle">
+                                            <div class="toggle-switch">
+                                                <input type="radio" id="fastMode" name="analysisMode" value="fast" checked>
+                                                <label for="fastMode" class="toggle-option">
+                                                    <i class="fas fa-bolt"></i>
+                                                    <span>Fast</span>
+                                                </label>
+                                                
+                                                <input type="radio" id="detailedMode" name="analysisMode" value="detailed">
+                                                <label for="detailedMode" class="toggle-option">
+                                                    <i class="fas fa-microscope"></i>
+                                                    <span>Detailed</span>
+                                                </label>
+                                                
+                                                <div class="toggle-slider"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Mode Descriptions -->
+                                    <div class="mt-4">
+                                        <div id="fastModeDescription" class="mode-description">
+                                            <div class="flex items-start gap-2">
+                                                <i class="fas fa-bolt" style="color: var(--primary-600); margin-top: 0.125rem;"></i>
+                                                <div>
+                                                    <p style="color: var(--neutral-900); font-size: 0.875rem; font-weight: 500;">Fast Analysis</p>
+                                                    <p style="color: var(--neutral-600); font-size: 0.75rem;">Quick pneumonia detection using fine-tuned AI model. Best for rapid screening.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="detailedModeDescription" class="mode-description" style="display: none;">
+                                            <div class="flex items-start gap-2">
+                                                <i class="fas fa-microscope" style="color: var(--primary-600); margin-top: 0.125rem;"></i>
+                                                <div>
+                                                    <p style="color: var(--neutral-900); font-size: 0.875rem; font-weight: 500;">Detailed Analysis</p>
+                                                    <p style="color: var(--neutral-600); font-size: 0.75rem;">Comprehensive multi-finding analysis using advanced VLM. Includes detailed recommendations.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Upload Area -->
+                            <div class="upload-section" id="uploadSection">
+                                <div class="upload-area" id="uploadArea">
+                                    <div class="upload-icon-container">
+                                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    </div>
+
+                                    <div class="upload-content">
+                                        <h3 class="upload-title">UPLOAD MEDICAL IMAGE</h3>
+                                        <p class="upload-description">
+                                            Drag and drop your X-ray image here, or click the button below to select a file from your device.
+                                        </p>
+                                    </div>
+
+                                    <button class="upload-button" id="browseBtn">
+                                        SELECT FILE
+                                    </button>
+
+                                    <p class="upload-hint">Supports: JPG, PNG, DICOM</p>
+
+                                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                                </div>
+                            </div>
+
+                            <!-- Analyzing State -->
+                            <div class="analyzing-section" id="analyzingSection" style="display: none;">
+                                <div class="analyzing-icon-container">
+                                    <div class="analyzing-icon-bg">
+                                        <i class="fas fa-brain" style="width: 3rem; height: 3rem; color: var(--neutral-900);"></i>
+                                    </div>
+                                    <i class="fas fa-spinner analyzing-spinner"></i>
+                                </div>
+                                <div class="text-center">
+                                    <h3 class="analyzing-title">ANALYZING</h3>
+                                    <p class="analyzing-description">AI is processing your medical image</p>
+                                    <div class="progress progress-large">
+                                        <div class="progress-bar" style="width: 75%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image Display -->
+                            <div class="image-display-section" id="imageDisplaySection" style="display: none;">
+                                <img id="uploadedImage" src="" alt="Medical scan">
+                                
+                                <div class="analysis-complete-badge" id="analysisCompleteBadge2" style="display: none;">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>ANALYSIS COMPLETE</span>
+                                </div>
+
+                                <div class="image-overlay">
+                                    <div class="image-overlay-content">
+                                        <div class="image-info">
+                                            <p class="image-info-type">CHEST X-RAY • PA VIEW</p>
+                                            <p class="image-info-patient">Patient ID: P-2025-1847</p>
+                                            <p class="image-info-datetime">Nov 1, 2025 • 10:30 AM</p>
+                                        </div>
+                                        <div class="image-actions">
+                                            <button class="btn btn-outline-light btn-icon">
+                                                <i class="fas fa-sync-alt"></i>
+                                                ROTATE
+                                            </button>
+                                            <button class="btn btn-outline-light btn-icon">
+                                                <i class="fas fa-download"></i>
+                                                DOWNLOAD
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="d-flex mb-4">
-                    <div class="feature-icon blue me-3">
-                        <i class="fas fa-file-medical-alt"></i>
+
+                <div class="card">
+                    <div class="card-content" style="padding: 1.75rem 2.5rem;">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <div class="size-8 rounded-lg flex items-center justify-center" style="background-color: var(--neutral-100); border: 1px solid var(--neutral-200);">
+                                    <i class="fas fa-microphone" style="color: var(--neutral-900); font-size: 0.875rem;"></i>
+                                </div>
+                                <div>
+                                    <h4 style="color: var(--neutral-900); font-size: 0.875rem; font-weight: 500;">Voice Symptoms</h4>
+                                    <p style="color: var(--neutral-600); font-size: 0.75rem;">Describe symptoms via voice</p>
+                                </div>
+                            </div>
+                            <button id="voiceRecordBtn" class="btn btn-outline-light" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: rgb(239, 68, 68);">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+
+                        <div id="voiceTranscription" class="hidden">
+                            <div class="card" style="background-color: var(--neutral-50); border: 1px solid var(--neutral-200); margin-bottom: 0.5rem;">
+                                <div class="card-content" style="padding: 0.75rem;">
+                                    <p style="color: var(--neutral-600); font-size: 0.75rem; margin-bottom: 0.25rem;">Transcribed Symptoms:</p>
+                                    <p id="transcribedText" style="color: var(--neutral-900); font-size: 0.875rem;"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs" style="color: var(--neutral-600);">
+                                <i class="fas fa-clock" style="font-size: 0.75rem;"></i>
+                                <span id="audioDuration">0.0s</span>
+                                <span>•</span>
+                                <i class="fas fa-robot" style="font-size: 0.75rem;"></i>
+                                <span>Whisper-1</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end mt-4">
+                            <button id="manualAnalyzeBtn" class="btn btn-neutral" style="display: none;">
+                                <i class="fas fa-stethoscope"></i>
+                                <span style="margin-left: 0.5rem;">Start Analysis Without Voice</span>
+                            </button>
+                        </div>
+
+                        <input type="file" id="audioInput" accept="audio/*" style="display: none;">
                     </div>
-                    <div>
-                        <h5>4. Structured Report Generation</h5>
-                        <p>Receive a detailed, professional report with key findings.</p>
+                </div>
+            </section>
+
+            <!-- Analysis Section -->
+            <section class="analysis-section">
+                <div class="card overflow-hidden">
+                    <div class="card-content border-bottom" style="border-bottom: 1px solid var(--neutral-200); padding: 2rem 2.5rem;">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="flex items-center gap-2">
+                                <div class="size-10 rounded-lg flex items-center justify-center" style="background-color: var(--neutral-100); border: 1px solid var(--neutral-200);">
+                                    <i class="fas fa-brain" style="color: var(--neutral-900);"></i>
+                                </div>
+                                <div>
+                                    <h2 style="color: var(--neutral-900); font-weight: 500;">AI Analysis Results</h2>
+                                    <p style="color: var(--neutral-600); font-size: 0.75rem;">
+                                        Powered by <span id="vlmProvider" style="font-weight: 500;">Groq VLM</span>
+                                        <span id="providerBadge" class="badge badge-outline" style="margin-left: 0.5rem;">PRIMARY</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-results-container">
+                        <!-- Empty State -->
+                        <div class="analysis-awaiting empty-state" id="emptyState">
+                            <div class="analysis-awaiting-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h3>Awaiting Medical Image</h3>
+                            <p>Upload a medical image above to begin comprehensive AI-powered diagnostic analysis.</p>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div class="analysis-processing loading-state" id="loadingState" style="display: none;">
+                            <div class="analysis-processing-icon">
+                                <i class="fas fa-spinner"></i>
+                            </div>
+                            <h3>Processing Analysis</h3>
+                            <p>AI is evaluating your medical image</p>
+                            <div class="progress analysis-progress">
+                                <div class="progress-bar" style="width: 75%;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Results State with Tabs -->
+                        <div class="flex-1 overflow-hidden results-state" id="resultsState" style="display: none;">
+                            <!-- Confidence Score Header -->
+                            <div class="p-6 border-bottom" style="border-bottom: 1px solid var(--neutral-200);">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-shield-alt" style="color: var(--neutral-900); width: 1.25rem; height: 1.25rem;"></i>
+                                        <span style="color: var(--neutral-900); font-size: 0.875rem;">Confidence Score</span>
+                                    </div>
+                                    <span class="confidence-score" style="font-size: 1.875rem; color: var(--neutral-900); font-weight: 500;">87%</span>
+                                </div>
+                                <div class="progress" style="height: 0.75rem;">
+                                    <div class="progress-bar confidence-bar" style="width: 0%; background-color: var(--neutral-900);"></div>
+                                </div>
+                                <p style="color: var(--neutral-600); font-size: 0.75rem; margin-top: 0.5rem;">High confidence in analysis accuracy</p>
+                            </div>
+
+                            <!-- Tabs -->
+                            <div class="tabs-container">
+                                <div class="tabs-list">
+                                    <button class="tabs-trigger active" data-tab="overview">
+                                        <i class="fas fa-eye"></i>
+                                        OVERVIEW
+                                    </button>
+                                    <button class="tabs-trigger" data-tab="findings">
+                                        <i class="fas fa-file-medical"></i>
+                                        FINDINGS
+                                    </button>
+                                    <button class="tabs-trigger" data-tab="recommendations">
+                                        <i class="fas fa-chart-line"></i>
+                                        RECOMMENDATIONS
+                                    </button>
+                                    <button class="tabs-trigger" data-tab="metrics">
+                                        <i class="fas fa-chart-bar"></i>
+                                        METRICS
+                                    </button>
+                                </div>
+
+                                <!-- Overview Tab Content -->
+                                <div class="tabs-content active" id="overview-tab">
+                                    <div class="space-y-6">
+                                        <!-- Overall Assessment Card -->
+                                        <div class="card" style="border: 2px solid var(--neutral-900);">
+                                            <div class="card-content">
+                                                <div class="flex items-center justify-between mb-6">
+                                                    <div>
+                                                        <p style="color: var(--neutral-500); font-size: 0.875rem; letter-spacing: var(--tracking-widest); margin-bottom: 0.5rem;">OVERALL ASSESSMENT</p>
+                                                        <p id="overallAssessment" style="font-size: 2rem; font-weight: 500; letter-spacing: var(--tracking-tight); color: var(--neutral-900);">NORMAL STUDY</p>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <p style="color: var(--neutral-500); font-size: 0.875rem; letter-spacing: var(--tracking-widest); margin-bottom: 0.5rem;">CONFIDENCE SCORE</p>
+                                                        <p class="confidence-score" style="font-size: 2.5rem; font-weight: 500; letter-spacing: var(--tracking-tight); color: var(--neutral-900);">94%</p>
+                                                    </div>
+                                                </div>
+                                                <div class="progress" style="height: 0.75rem; margin-bottom: 1.5rem;">
+                                                    <div class="progress-bar" style="width: 94%; background-color: var(--neutral-900);"></div>
+                                                </div>
+                                                <p style="color: var(--neutral-600); line-height: 1.625; font-size: 1rem;">
+                                                    High confidence diagnostic assessment based on comprehensive AI analysis
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- AI Diagnosis Report -->
+                                        <div id="diagnosisReport" style="margin-bottom: 2rem; display: none;">
+                                            <h3 style="color: var(--neutral-900); font-size: 1.25rem; font-weight: 500; margin-bottom: 1rem;">AI Diagnosis Report</h3>
+                                            <div id="diagnosisText" style="background: var(--neutral-50); padding: 1.5rem; border-radius: 0.75rem; border-left: 4px solid var(--neutral-900); color: var(--neutral-700); line-height: 1.7; white-space: pre-wrap;"></div>
+                                        </div>
+
+                                        <!-- Findings Summary -->
+                                        <div>
+                                            <h3 style="color: var(--neutral-900); font-size: 1.25rem; font-weight: 500; margin-bottom: 1.5rem;">Findings Summary</h3>
+                                            <div class="findings-grid" id="overviewFindings">
+                                                <div class="finding-card animate-slide-in">
+                                                    <div class="finding-card-content">
+                                                        <div class="finding-header">
+                                                            <div>
+                                                                <span class="badge badge-outline" style="font-size: 0.75rem; letter-spacing: var(--tracking-wide);">LUNGS</span>
+                                                            </div>
+                                                            <div class="finding-number">01</div>
+                                                        </div>
+                                                        <h4 class="finding-title">Bilateral Lung Fields</h4>
+                                                        <div class="finding-confidence-row">
+                                                            <span class="finding-confidence-label">Confidence</span>
+                                                            <span class="finding-confidence-value">96%</span>
+                                                        </div>
+                                                        <div class="progress" style="height: 0.5rem;">
+                                                            <div class="progress-bar" style="width: 96%; background-color: var(--neutral-900);"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="finding-card animate-slide-in" style="animation-delay: 0.1s;">
+                                                    <div class="finding-card-content">
+                                                        <div class="finding-header">
+                                                            <div>
+                                                                <span class="badge badge-outline" style="font-size: 0.75rem; letter-spacing: var(--tracking-wide);">HEART</span>
+                                                            </div>
+                                                            <div class="finding-number">02</div>
+                                                        </div>
+                                                        <h4 class="finding-title">Cardiac Silhouette</h4>
+                                                        <div class="finding-confidence-row">
+                                                            <span class="finding-confidence-label">Confidence</span>
+                                                            <span class="finding-confidence-value">91%</span>
+                                                        </div>
+                                                        <div class="progress" style="height: 0.5rem;">
+                                                            <div class="progress-bar" style="width: 91%; background-color: var(--neutral-900);"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Findings Tab Content -->
+                                <div class="tabs-content" id="findings-tab">
+                                    <div class="space-y-8">
+                                        <div>
+                                            <h3 style="color: var(--neutral-900); font-size: 1.5rem; font-weight: 500; margin-bottom: 0.75rem;">Detailed Findings</h3>
+                                            <p style="color: var(--neutral-600); font-size: 1rem;">Comprehensive anatomical assessment with diagnostic details</p>
+                                        </div>
+
+                                        <div class="space-y-6" id="detailedFindings">
+                                            <div class="card detailed-finding animate-slide-in-left">
+                                                <div class="detailed-finding-content">
+                                                    <div class="detailed-finding-main">
+                                                        <div class="detailed-finding-number">01</div>
+                                                        <div class="detailed-finding-body">
+                                                            <div class="detailed-finding-header">
+                                                                <div>
+                                                                    <span class="badge badge-outline" style="font-size: 0.75rem; letter-spacing: var(--tracking-wide); margin-bottom: 0.75rem;">LUNGS</span>
+                                                                    <h4 class="detailed-finding-title">Bilateral Lung Fields</h4>
+                                                                    <span class="badge badge-outline" style="font-size: 0.75rem; letter-spacing: var(--tracking-wide);">NORMAL</span>
+                                                                </div>
+                                                                <div class="text-right">
+                                                                    <p style="color: var(--neutral-500); font-size: 0.875rem; letter-spacing: var(--tracking-wide); margin-bottom: 0.5rem;">CONFIDENCE</p>
+                                                                    <p style="font-size: 2rem; font-weight: 500; color: var(--neutral-900);">96%</p>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <p class="detailed-finding-description">
+                                                                Both lung fields demonstrate clear and symmetric aeration. No focal consolidation, infiltrates, masses, or nodules are identified.
+                                                            </p>
+
+                                                            <div class="separator separator-horizontal" style="margin: 2rem 0;"></div>
+
+                                                            <div class="assessment-points">
+                                                                <p class="assessment-points-title">KEY ASSESSMENT POINTS</p>
+                                                                <div class="space-y-4">
+                                                                    <div class="assessment-point">
+                                                                        <div class="assessment-point-bullet"></div>
+                                                                        <p class="assessment-point-text">Clear bilateral lung fields with normal vasculature</p>
+                                                                    </div>
+                                                                    <div class="assessment-point">
+                                                                        <div class="assessment-point-bullet"></div>
+                                                                        <p class="assessment-point-text">No pneumothorax or pleural effusion detected</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Recommendations Tab Content -->
+                                <div class="tabs-content" id="recommendations-tab">
+                                    <div class="space-y-8">
+                                        <div>
+                                            <h3 style="color: var(--neutral-900); font-size: 1.5rem; font-weight: 500; margin-bottom: 0.75rem;">Clinical Recommendations</h3>
+                                            <p style="color: var(--neutral-600); font-size: 1rem;">Suggested follow-up actions and monitoring guidelines</p>
+                                        </div>
+
+                                        <div class="recommendations-container" id="recommendationsList">
+                                            <div class="recommendation-item animate-slide-in-left">
+                                                <div class="recommendation-header">
+                                                    <span class="badge badge-outline priority-high" style="font-size: 0.75rem; letter-spacing: var(--tracking-widest);">HIGH PRIORITY</span>
+                                                    <span class="badge badge-outline" style="font-size: 0.75rem; letter-spacing: var(--tracking-wide); border-color: var(--neutral-300);">Clinical Correlation</span>
+                                                    <span class="badge badge-outline" style="font-size: 0.75rem; margin-left: auto; border-color: var(--neutral-300);">
+                                                        <i class="fas fa-clock" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                                                        Immediate
+                                                    </span>
+                                                </div>
+                                                <p class="recommendation-text" style="margin-top: 1rem;">
+                                                    Correlate findings with patient symptoms, medical history, and clinical presentation. Physical examination recommended.
+                                                </p>
+                                            </div>
+
+                                            <div class="recommendation-item animate-slide-in-left" style="animation-delay: 0.1s;">
+                                                <div class="recommendation-header">
+                                                    <span class="badge badge-outline priority-medium" style="font-size: 0.75rem; letter-spacing: var(--tracking-widest);">MEDIUM PRIORITY</span>
+                                                    <span class="badge badge-outline" style="font-size: 0.75rem; letter-spacing: var(--tracking-wide); border-color: var(--neutral-300);">Follow-up Imaging</span>
+                                                    <span class="badge badge-outline" style="font-size: 0.75rem; margin-left: auto; border-color: var(--neutral-300);">
+                                                        <i class="fas fa-clock" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                                                        6 months
+                                                    </span>
+                                                </div>
+                                                <p class="recommendation-text" style="margin-top: 1rem;">
+                                                    Consider repeat chest radiograph in 6 months to monitor the mild left cardiac border prominence.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Metrics Tab Content -->
+                                <div class="tabs-content" id="metrics-tab">
+                                    <div class="space-y-6">
+                                        <div>
+                                            <h3 style="color: var(--neutral-900); font-size: 1.5rem; font-weight: 500; margin-bottom: 0.75rem;">Analysis Metrics</h3>
+                                            <p style="color: var(--neutral-600); font-size: 1rem;">Technical details and performance indicators</p>
+                                        </div>
+
+                                        <div class="card">
+                                            <div class="card-content">
+                                                <div class="space-y-4">
+                                                    <div class="flex items-center justify-between py-3 border-bottom" style="border-color: var(--neutral-200);">
+                                                        <span style="color: var(--neutral-600); font-size: 0.875rem;">Processing Time</span>
+                                                        <span style="color: var(--neutral-900); font-weight: 500;">2.3s</span>
+                                                    </div>
+                                                    <div class="flex items-center justify-between py-3 border-bottom" style="border-color: var(--neutral-200);">
+                                                        <span style="color: var(--neutral-600); font-size: 0.875rem;">Algorithm Version</span>
+                                                        <span style="color: var(--neutral-900); font-weight: 500;">DiagnosticAI v4.2</span>
+                                                    </div>
+                                                    <div class="flex items-center justify-between py-3">
+                                                        <span style="color: var(--neutral-600); font-size: 0.875rem;">Training Dataset</span>
+                                                        <span style="color: var(--neutral-900); font-weight: 500;">Medical Imaging DB</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Information -->
+                <div class="card">
+                    <div class="card-content">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="size-10 rounded-lg flex items-center justify-center" style="background-color: var(--neutral-100); border: 1px solid var(--neutral-200);">
+                                <i class="fas fa-user" style="color: var(--neutral-900);"></i>
+                            </div>
+                            <div>
+                                <h2 style="color: var(--neutral-900); font-weight: 500;">Patient Information</h2>
+                                <p style="color: var(--neutral-600); font-size: 0.75rem;">Scan details</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2.5">
+                            <div class="flex items-center justify-between p-3 card" style="background-color: var(--neutral-50); border: 1px solid var(--neutral-200);">
+                                <span style="color: var(--neutral-700); font-size: 0.875rem;">Patient ID:</span>
+                                <span style="color: var(--neutral-900); font-weight: 500;">P-2024-001</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 card" style="background-color: var(--neutral-50); border: 1px solid var(--neutral-200);">
+                                <span style="color: var(--neutral-700); font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-calendar" style="color: var(--neutral-900); width: 1rem; height: 1rem;"></i>
+                                    Date:
+                                </span>
+                                <span style="color: var(--neutral-900); font-weight: 500;" id="patientDate">Nov 1, 2025</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 card" style="background-color: var(--neutral-50); border: 1px solid var(--neutral-200);">
+                                <span style="color: var(--neutral-700); font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-clock" style="color: var(--neutral-900); width: 1rem; height: 1rem;"></i>
+                                    Time:
+                                </span>
+                                <span style="color: var(--neutral-900); font-weight: 500;" id="patientTime">10:30 AM</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 card" style="background-color: var(--neutral-50); border: 1px solid var(--neutral-200);">
+                                <span style="color: var(--neutral-700); font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-heartbeat" style="color: var(--neutral-900); width: 1rem; height: 1rem;"></i>
+                                    Study Type:
+                                </span>
+                                <span style="color: var(--neutral-900); font-weight: 500;" id="studyType">Chest X-Ray</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </main>
 
-<div class="section-divider"></div>
+    <!-- Hidden form for analysis -->
+    <form id="analysisForm" action="{{ url_for('main.api_analyze') }}" method="post" enctype="multipart/form-data" style="display: none;">
+        <input type="file" name="xray_image" id="analysisFileInput" accept="image/*">
+        <input type="text" name="symptoms" id="symptomsInput" placeholder="Patient symptoms (optional)">
+        <input type="text" name="patient_age" id="ageInput" placeholder="Patient age (optional)">
+        <select name="patient_gender" id="genderInput">
+            <option value="">Select gender (optional)</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+        </select>
+        <textarea name="medical_history" id="historyInput" placeholder="Medical history (optional)"></textarea>
+    </form>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm">
-            <div class="card-header success-header">
-                <h3 class="card-title mb-0"><i class="fas fa-shield-alt me-2"></i>System Capabilities</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Image Enhancement</h5>
-                                <p class="mb-0">Automatic preprocessing for clearer analysis</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Structured Reporting</h5>
-                                <p class="mb-0">Clear, organized findings with highlights</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Multimodal Analysis</h5>
-                                <p class="mb-0">Combines visual data with symptoms</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Density Analysis</h5>
-                                <p class="mb-0">Measures image density patterns</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Educational Notes</h5>
-                                <p class="mb-0">Provides learning context for findings</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-check-circle text-success me-2 fa-2x"></i>
-                            <div>
-                                <h5>Anatomical Analysis</h5>
-                                <p class="mb-0">Region-specific measurements</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-        
-        // File upload preview
-        const fileInput = document.getElementById('xray_image');
-        if (fileInput) {
-            fileInput.addEventListener('change', function(event) {
-                const fileName = event.target.files[0]?.name;
-                if (fileName) {
-                    const fileLabel = document.querySelector('label[for="xray_image"]');
-                    fileLabel.innerHTML = `<i class="fas fa-file-medical-alt me-2"></i>Selected file: ${fileName}`;
-                }
-            });
-        }
-    });
-</script>
-{% endblock %}
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
