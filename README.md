@@ -1,5 +1,11 @@
 # Multimodal Medical Diagnosis Assistant
 
+![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Flask](https://img.shields.io/badge/framework-Flask-black.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
+![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)
+
 This is an advanced AI-powered web application designed to assist with medical diagnosis by analyzing chest X-ray images and patient-reported symptoms. The system leverages a suite of cutting-edge AI models, including Vision Language Models (VLMs) and a fine-tuned image classifier, to provide both rapid and in-depth diagnostic insights.
 
 ## ✨ Key Features
