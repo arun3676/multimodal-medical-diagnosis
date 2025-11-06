@@ -1,7 +1,8 @@
 import os
-from typing import List, Optional
+import json
+from typing import List, Optional, Union
 
-from pydantic import Field
+from pydantic import Field, validator
 from pydantic_settings import BaseSettings
 
 
@@ -37,6 +38,26 @@ class Settings(BaseSettings):
     # --- Monitoring & Features ---
     WANDB_ENABLED: bool = Field(False, env="WANDB_ENABLED")
     MODEL_CACHE_ENABLED: bool = Field(True, env="MODEL_CACHE_ENABLED")
+
+    @validator('ALLOWED_ORIGINS', pre=True)
+    def parse_allowed_origins(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                # Fallback: split by comma if JSON parsing fails
+                return [origin.strip() for origin in v.split(',') if origin.strip()]
+        return v
+
+    @validator('VISION_PROVIDER_ORDER', pre=True)
+    def parse_vision_provider_order(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                # Fallback: split by comma if JSON parsing fails
+                return [provider.strip() for provider in v.split(',') if provider.strip()]
+        return v
 
     class Config:
         # This tells Pydantic to load variables from a .env file
