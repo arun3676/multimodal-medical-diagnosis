@@ -30,4 +30,4 @@ ENV PYTHONUNBUFFERED=1
 
 # Run the application with Gunicorn
 # Use 1 worker to control memory usage
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "120", "run:create_app()"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "120", "run_app:create_app()"]
