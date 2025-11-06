@@ -100,41 +100,74 @@ class PneumoniaClassifier:
             True if model loaded successfully, False otherwise
         """
         try:
-            logger.info(f"Loading model from: {model_path}")
+            logger.info(f"📦 Loading model from: {model_path}")
+            logger.info(f"🖥️ Device: {self.device}")
             
             # Load the base ViT model
             base_model_name = "google/vit-base-patch16-224-in21k"
-            logger.info(f"Loading base model: {base_model_name}")
+            logger.info(f"📥 Loading base model: {base_model_name}")
             
-            # Load the image processor
-            self.processor = AutoImageProcessor.from_pretrained(base_model_name)
+            try:
+                # Load the image processor
+                self.processor = AutoImageProcessor.from_pretrained(base_model_name)
+                logger.info("✅ Image processor loaded")
+            except Exception as proc_error:
+                logger.error(f"❌ Failed to load image processor: {str(proc_error)}", exc_info=True)
+                raise
             
-            # Load the base model
-            base_model = AutoModelForImageClassification.from_pretrained(
-                base_model_name,
-                num_labels=2,  # NORMAL, PNEUMONIA
-                ignore_mismatched_sizes=True
-            )
+            try:
+                # Load the base model
+                base_model = AutoModelForImageClassification.from_pretrained(
+                    base_model_name,
+                    num_labels=2,  # NORMAL, PNEUMONIA
+                    ignore_mismatched_sizes=True
+                )
+                logger.info("✅ Base model loaded")
+            except Exception as base_error:
+                logger.error(f"❌ Failed to load base model: {str(base_error)}", exc_info=True)
+                raise
             
             # Load LoRA weights if it's a Hugging Face model
             if "/" in model_path and not os.path.exists(model_path):
-                logger.info(f"Loading LoRA adapter from: {model_path}")
-                self.model = PeftModel.from_pretrained(base_model, model_path)
+                logger.info(f"📥 Loading LoRA adapter from: {model_path}")
+                try:
+                    self.model = PeftModel.from_pretrained(base_model, model_path)
+                    logger.info("✅ LoRA adapter loaded")
+                except Exception as lora_error:
+                    logger.error(f"❌ Failed to load LoRA adapter: {str(lora_error)}", exc_info=True)
+                    raise
             else:
                 # For local models, try to load as a regular model
-                self.model = AutoModelForImageClassification.from_pretrained(model_path)
+                logger.info(f"📥 Loading local model from: {model_path}")
+                try:
+                    self.model = AutoModelForImageClassification.from_pretrained(model_path)
+                    logger.info("✅ Local model loaded")
+                except Exception as local_error:
+                    logger.error(f"❌ Failed to load local model: {str(local_error)}", exc_info=True)
+                    raise
             
-            self.model.to(self.device)
+            logger.info(f"🔄 Moving model to device: {self.device}")
+            try:
+                self.model.to(self.device)
+                logger.info("✅ Model moved to device")
+            except Exception as device_error:
+                logger.error(f"❌ Failed to move model to device: {str(device_error)}", exc_info=True)
+                raise
+            
             self.model.eval()  # Set to evaluation mode
+            logger.info("✅ Model set to evaluation mode")
             
             self.model_loaded = True
             self.model_path = model_path
             
-            logger.info("✅ Model loaded successfully")
+            logger.info("✅ Model loaded successfully and ready for inference")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to load model: {str(e)}")
+            logger.error(f"❌ CRITICAL: Failed to load model: {str(e)}", exc_info=True)
+            logger.error(f"❌ Exception type: {type(e).__name__}")
+            logger.error(f"❌ Model path attempted: {model_path}")
+            logger.error(f"❌ Device: {self.device}")
             self.model_loaded = False
             return False
     
@@ -186,6 +219,8 @@ class PneumoniaClassifier:
         start_time = time.time()
         
         if not self.model_loaded:
+            logger.error("❌ Prediction failed: Model not loaded")
+            logger.error(f"❌ Model status: loaded={self.model_loaded}, model_exists={self.model is not None}")
             return {
                 'success': False,
                 'error': 'Model not loaded',
@@ -267,7 +302,10 @@ class PneumoniaClassifier:
             
         except Exception as e:
             processing_time = time.time() - start_time
-            logger.error(f"Prediction failed: {str(e)}")
+            logger.error(f"❌ CRITICAL: Prediction failed: {str(e)}", exc_info=True)
+            logger.error(f"❌ Exception type: {type(e).__name__}")
+            logger.error(f"❌ Image path: {image_path}")
+            logger.error(f"❌ Processing time before error: {processing_time:.3f}s")
             
             # Log error to W&B
             self.monitor.log_error(
@@ -453,7 +491,9 @@ def analyze_xray_for_pneumonia(image_path: str, model_path: Optional[str] = None
         }
         
     except Exception as e:
-        logger.error(f"Fine-tuned model analysis failed: {str(e)}")
+        logger.error(f"❌ CRITICAL: Fine-tuned model analysis failed: {str(e)}", exc_info=True)
+        logger.error(f"❌ Exception type: {type(e).__name__}")
+        logger.error(f"❌ Image path: {image_path}")
         return {
             'success': False,
             'error': f'Fine-tuned model analysis failed: {str(e)}',

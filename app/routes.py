@@ -179,29 +179,45 @@ def api_analyze():
                 # Fast analysis: Fine-tuned model only
                 logger.info("🚀 Fast analysis - using fine-tuned model...")
                 if _pneumonia_classifier and _pneumonia_classifier.is_ready():
-                    analysis_results = analyze_with_finetuned_model(filepath, symptoms)
-                    if analysis_results['success']:
-                        analysis_method = "fast_finetuned"
-                        logger.info("✅ Fast analysis successful")
-                    else:
-                        return jsonify({"success": False, "error": f"Fast analysis failed: {analysis_results.get('error', 'Unknown error')}"}), 500
+                    try:
+                        analysis_results = analyze_with_finetuned_model(filepath, symptoms)
+                        if analysis_results['success']:
+                            analysis_method = "fast_finetuned"
+                            logger.info("✅ Fast analysis successful")
+                        else:
+                            error_msg = analysis_results.get('error', 'Unknown error')
+                            logger.error(f"❌ Fast analysis failed: {error_msg}", exc_info=True)
+                            return jsonify({"success": False, "error": f"Fast analysis failed: {error_msg}"}), 500
+                    except Exception as fast_error:
+                        logger.error(f"❌ CRITICAL: Fast analysis exception: {str(fast_error)}", exc_info=True)
+                        return jsonify({"success": False, "error": f"Fast analysis crashed: {str(fast_error)}"}), 500
                 else:
+                    logger.warning("⚠️ Fine-tuned model not available or not ready")
+                    logger.warning(f"⚠️ Classifier status: exists={_pneumonia_classifier is not None}, ready={_pneumonia_classifier.is_ready() if _pneumonia_classifier else False}")
                     return jsonify({"success": False, "error": "Fast analysis not available - fine-tuned model not configured"}), 503
             
             elif analysis_type == "detailed":
                 # Detailed analysis: VLM only
                 logger.info("🔍 Detailed analysis - using VLM...")
-                analysis_results = analyze_with_vlm(filepath, symptoms)
-                
-                if 'error' not in analysis_results:
-                    analysis_method = "detailed_vlm"
-                    logger.info("✅ Detailed analysis successful")
-                else:
-                    return jsonify({"success": False, "error": f"Detailed analysis failed: {analysis_results.get('error', 'Unknown error')}"}), 500
+                try:
+                    analysis_results = analyze_with_vlm(filepath, symptoms)
+                    
+                    if 'error' not in analysis_results:
+                        analysis_method = "detailed_vlm"
+                        logger.info("✅ Detailed analysis successful")
+                    else:
+                        error_msg = analysis_results.get('error', 'Unknown error')
+                        logger.error(f"❌ Detailed analysis failed: {error_msg}", exc_info=True)
+                        return jsonify({"success": False, "error": f"Detailed analysis failed: {error_msg}"}), 500
+                except Exception as detailed_error:
+                    logger.error(f"❌ CRITICAL: Detailed analysis exception: {str(detailed_error)}", exc_info=True)
+                    return jsonify({"success": False, "error": f"Detailed analysis crashed: {str(detailed_error)}"}), 500
             
             # Validate analysis results
             if 'error' in analysis_results:
-                raise Exception(analysis_results.get('error', 'Analysis failed'))
+                error_msg = analysis_results.get('error', 'Analysis failed')
+                logger.error(f"❌ Analysis validation failed: {error_msg}")
+                raise Exception(error_msg)
             
             # Calculate processing time
             processing_time = time.time() - start_time
@@ -248,7 +264,10 @@ def api_analyze():
             return jsonify(response_data)
             
         except Exception as e:
-            logger.error(f"❌ Analysis exception: {str(e)}")
+            logger.error(f"❌ FATAL: Analysis exception: {str(e)}", exc_info=True)
+            logger.error(f"❌ Exception type: {type(e).__name__}")
+            logger.error(f"❌ Analysis type attempted: {analysis_type}")
+            logger.error(f"❌ File path: {filepath}")
             return jsonify({"success": False, "error": f"Analysis failed: {str(e)}"}), 500
         
         finally:
@@ -261,7 +280,8 @@ def api_analyze():
                 logger.warning(f"⚠️ Cleanup error: {cleanup_error}")
     
     except Exception as e:
-        logger.error(f"❌ General exception: {str(e)}")
+        logger.error(f"❌ FATAL: General exception in /api/analyze: {str(e)}", exc_info=True)
+        logger.error(f"❌ Exception type: {type(e).__name__}")
         return jsonify({"success": False, "error": f"Request failed: {str(e)}"}), 500
 
 

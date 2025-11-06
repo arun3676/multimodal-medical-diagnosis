@@ -2,6 +2,8 @@ import time
 import logging
 from flask import request, g
 from functools import wraps
+from collections import deque
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +12,14 @@ class APIMonitoringMiddleware:
     
     def __init__(self, app=None):
         self.app = app
+        # Smart health check tracking (in-memory, no disk I/O)
+        self.health_check_count = 0
+        self.health_check_failures = 0
+        self.last_health_status = 'healthy'
+        self.health_check_response_times = deque(maxlen=100)  # Keep last 100 only
+        self.last_health_summary_time = time.time()
+        self.health_summary_interval = 300  # Log summary every 5 minutes
+        
         if app is not None:
             self.init_app(app)
     
@@ -29,6 +39,54 @@ class APIMonitoringMiddleware:
         if hasattr(g, 'start_time'):
             duration_ms = (time.time() - g.start_time) * 1000
             
+            # Smart health check handling - skip logging but track metrics
+            if request.path == '/health' or request.endpoint == 'main.health_check':
+                self.health_check_count += 1
+                self.health_check_response_times.append(duration_ms)
+                
+                # Only log health check failures or status changes
+                current_status = 'healthy' if response.status_code == 200 else 'unhealthy'
+                
+                if response.status_code != 200:
+                    self.health_check_failures += 1
+                    logger.warning(
+                        f"Health check FAILED: status={response.status_code}, time={duration_ms:.1f}ms",
+                        extra={
+                            "api_endpoint": "health_check",
+                            "response_status": response.status_code,
+                            "response_time_ms": round(duration_ms, 2),
+                            "component": "health_monitoring"
+                        }
+                    )
+                elif current_status != self.last_health_status:
+                    # Status changed from unhealthy to healthy
+                    logger.info(
+                        f"Health check status changed: {self.last_health_status} → {current_status}",
+                        extra={"component": "health_monitoring"}
+                    )
+                
+                self.last_health_status = current_status
+                
+                # Periodic summary (every 5 minutes) instead of per-request logs
+                current_time = time.time()
+                if current_time - self.last_health_summary_time > self.health_summary_interval:
+                    avg_response_time = sum(self.health_check_response_times) / len(self.health_check_response_times) if self.health_check_response_times else 0
+                    logger.info(
+                        f"📊 Health Check Summary: {self.health_check_count} checks, "
+                        f"{self.health_check_failures} failures, "
+                        f"avg response: {avg_response_time:.1f}ms, "
+                        f"status: {self.last_health_status}",
+                        extra={"component": "health_monitoring"}
+                    )
+                    self.last_health_summary_time = current_time
+                    # Reset counters after summary
+                    self.health_check_count = 0
+                    self.health_check_failures = 0
+                
+                # Skip normal logging for health checks
+                return response
+            
+            # Normal API request logging
             # Determine if this was an error response
             is_error = response.status_code >= 400
             error_type = None
