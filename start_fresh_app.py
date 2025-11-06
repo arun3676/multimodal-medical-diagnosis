@@ -6,6 +6,24 @@ import os
 import sys
 from dotenv import load_dotenv
 
+# 🛡️ PREEMPTIVE W&B ERROR SUPPRESSION - MUST BE FIRST
+# This prevents ALL wandb socket/protocol errors before any imports
+os.environ["WANDB_SILENT"] = "true"
+os.environ["WANDB_CONSOLE"] = "off"
+os.environ["WANDB_MODE"] = "offline"  # 🎯 CRITICAL: Prevents ALL socket errors
+os.environ["WANDB_RUN_ID"] = "offline-run"
+os.environ["WANDB_DIR"] = "/tmp/wandb"
+os.environ["WANDB_SERVICE_WAIT"] = "300"
+os.environ["WANDB_AGENT_DISABLE_FLAKING"] = "true"
+os.environ["WANDB_DISABLE_CODE"] = "true"
+os.environ["WANDB_DISABLE_STATS"] = "true"
+os.environ["WANDB_DISABLE_GIT"] = "true"
+os.environ["WANDB_ARTIFACTS_DISABLED"] = "true"
+os.environ["WANDB_ENSURE_DIR"] = "true"
+os.environ["WANDB_DISABLE_SERVICE"] = "true"  # 🛡️ EXTRA: Disable service completely
+os.environ["WANDB_DISABLE_SYMLINKS"] = "true"  # Prevents symlink errors
+os.environ["WANDB_RUN_GROUP"] = "offline"  # Prevents group conflicts
+
 # Load environment variables
 load_dotenv()
 
