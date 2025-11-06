@@ -1,7 +1,8 @@
 import os
 from typing import List, Optional
 
-from pydantic import BaseSettings, Field
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -41,6 +42,7 @@ class Settings(BaseSettings):
         # This tells Pydantic to load variables from a .env file
         env_file = ".env"
         env_file_encoding = "utf-8"
+        case_sensitive = False
 
 # Create a single, importable instance of the settings
 settings = Settings()
