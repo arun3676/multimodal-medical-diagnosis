@@ -12,9 +12,8 @@ COPY requirements.txt .
 # --no-cache-dir keeps the image small
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download and cache the fine-tuned model to save build minutes
-# This creates a cached layer that only rebuilds if the model name changes
-RUN python -c "from transformers import AutoModel, AutoTokenizer; model_name = 'arunn7/vit-base-patch16-224-in21k-medical-xray-lora'; print(f'Caching model: {model_name}'); AutoModel.from_pretrained(model_name); AutoTokenizer.from_pretrained(model_name); print('Model cached successfully')"
+# Note: Model caching removed due to non-existent Hugging Face repository
+# Models will be downloaded at runtime when first accessed
 
 # Copy the rest of the application code
 # This layer is rebuilt on any code change, but dependencies are already installed
