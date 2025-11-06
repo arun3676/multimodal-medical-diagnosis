@@ -30,7 +30,6 @@ os.environ["WANDB_DISABLE_SYMLINKS"] = "true"  # Prevents symlink errors
 os.environ["WANDB_RUN_GROUP"] = "offline"  # Prevents group conflicts
 
 # Import our new logging and monitoring components
-from app.core.better_stack_handler import setup_better_stack_logging
 from app.core.monitoring_middleware import APIMonitoringMiddleware
 from app.core.fresh_wandb_monitor import start_new_session, get_fresh_monitor
 from app.core.logging_config import setup_logging
@@ -70,8 +69,7 @@ def create_app(test_config=None):
     # Create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     
-    # Configure Better Stack logging
-    logger = setup_better_stack_logging(settings.BETTER_STACK_SOURCE_TOKEN, settings.LOG_LEVEL)
+    # Configure app logging level
     app.logger.setLevel(getattr(logging, settings.LOG_LEVEL, logging.INFO))
     
     # Enhanced configuration
