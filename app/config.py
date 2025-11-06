@@ -21,7 +21,6 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = Field(None, env="OPENAI_API_KEY")
     GEMINI_API_KEY: Optional[str] = Field(None, env="GEMINI_API_KEY")
     WANDB_API_KEY: Optional[str] = Field(None, env="WANDB_API_KEY")
-    BETTER_STACK_SOURCE_TOKEN: Optional[str] = Field(None, env="BETTER_STACK_SOURCE_TOKEN")
     SENTRY_DSN: Optional[str] = Field(None, env="SENTRY_DSN")
 
     # --- Application Behavior ---
