@@ -22,8 +22,10 @@ class ModelCache:
         Args:
             cache_dir: Directory to store cached models. Defaults to ./models_cache
         """
-        if cache_dir is None:
-            cache_dir = Path(__file__).parent.parent.parent / "models_cache"
+        # Use environment variable for cache dir, with a fallback for local dev
+        default_cache_dir = Path(__file__).parent.parent.parent / "models_cache"
+        cache_dir = os.getenv('MODEL_CACHE_DIR', str(default_cache_dir))
+
         
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True)

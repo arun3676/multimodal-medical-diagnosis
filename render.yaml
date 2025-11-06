@@ -10,7 +10,13 @@ services:
     instanceType: e1-standard-2 # 2 vCPUs, 4 GB RAM
     plan: starter
     healthCheckPath: /health
+    disks:
+      - name: model-cache
+        mountPath: /mnt/disk
+        sizeGB: 2
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: MODEL_CACHE_DIR
+        value: /mnt/disk/models_cache # Point to a subfolder on the disk
       # Add your other API keys here in the Render dashboard, not here.
